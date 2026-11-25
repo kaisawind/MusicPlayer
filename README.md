@@ -17,7 +17,6 @@ cmake/
   toolchain-zig-x86-windows.cmake
 docs/
   设计文档.md
-  设计文档.xlsx
   images/
     ui-layout.png
 third_party/
