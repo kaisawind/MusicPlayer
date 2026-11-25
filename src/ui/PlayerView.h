@@ -78,8 +78,5 @@ private:
 private:
 	HINSTANCE m_hInst;
 	HWND m_hWnd;
-	RECT m_rectBegin;
-	RECT m_rectEnd;
-	RECT m_rectCurrent;
 };
 #endif // __CPLAYERVIEW_H__

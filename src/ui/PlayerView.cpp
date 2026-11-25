@@ -32,6 +32,10 @@ const DWORD LBS_USER = LBS_NOTIFY | LBS_SORT | WS_BORDER | LBS_NOINTEGRALHEIGHT;
 // 按 DPI 创建并复用的 UI 字体。
 HFONT g_hUiFont = NULL;
 UINT g_uiFontDpi = 0;
+// 时间文本区域由布局更新；CPlayerView 每条消息临时构造，因此放在文件作用域。
+RECT g_rectBegin;
+RECT g_rectEnd;
+RECT g_rectCurrent;
 
 // 安全读取列表文本：先查长度，失败或超出缓冲区返回 LB_ERR。
 int GetListText(HWND hwndList, int iIndex, TCHAR* szText, int cchText)
@@ -62,9 +66,6 @@ CPlayerView::CPlayerView(HINSTANCE hInst, HWND hWnd)
 {
 	this->m_hInst = hInst;
 	this->m_hWnd = hWnd;
-	SetRectEmpty(&m_rectBegin);
-	SetRectEmpty(&m_rectEnd);
-	SetRectEmpty(&m_rectCurrent);
 }
 
 /**
@@ -490,9 +491,10 @@ void CPlayerView::LayoutControls()
 	int iCurrentX = (iWidth - iLabelWidth) / 2;
 	int iEndX = iVolumeX - iLabelWidth - S(10);
 
-	SetRect(&m_rectBegin, iBeginX, iTextY, iBeginX + iLabelWidth, iTextY + iTextHeight);
-	SetRect(&m_rectCurrent, iCurrentX, iTextY, iCurrentX + iLabelWidth, iTextY + iTextHeight);
-	SetRect(&m_rectEnd, iEndX, iTextY, iEndX + iLabelWidth, iTextY + iTextHeight);
+	// 时间文本区域要跨 CPlayerView 实例保留
+	SetRect(&g_rectBegin, iBeginX, iTextY, iBeginX + iLabelWidth, iTextY + iTextHeight);
+	SetRect(&g_rectCurrent, iCurrentX, iTextY, iCurrentX + iLabelWidth, iTextY + iTextHeight);
+	SetRect(&g_rectEnd, iEndX, iTextY, iEndX + iLabelWidth, iTextY + iTextHeight);
 
 	int iGroupWidth = iListWidth - iLeftInset - iRightInset;
 	int iButtonGap = (iGroupWidth - 3 * iButtonWidth) / 2;
@@ -813,7 +815,7 @@ void CPlayerView::UpdateRectBeginTime(HDC hdc, const TCHAR szBeginTime[])
 	{
 		hOldFont = SelectObject(hdc, g_hUiFont);
 	}
-	TextOut(hdc, m_rectBegin.left, m_rectBegin.top, szBeginTime, lstrlen(szBeginTime));
+	TextOut(hdc, g_rectBegin.left, g_rectBegin.top, szBeginTime, lstrlen(szBeginTime));
 	if (NULL != hOldFont)
 	{
 		SelectObject(hdc, hOldFont);
@@ -838,7 +840,7 @@ void CPlayerView::UpdateRectTotalTime(HDC hdc, const TCHAR szTotalTime[])
 	{
 		hOldFont = SelectObject(hdc, g_hUiFont);
 	}
-	TextOut(hdc, m_rectEnd.left, m_rectEnd.top, szTotalTime, lstrlen(szTotalTime));
+	TextOut(hdc, g_rectEnd.left, g_rectEnd.top, szTotalTime, lstrlen(szTotalTime));
 	if (NULL != hOldFont)
 	{
 		SelectObject(hdc, hOldFont);
@@ -863,7 +865,7 @@ void CPlayerView::UpdateRectCurreTime(HDC hdc, const TCHAR szCurrentTime[])
 	{
 		hOldFont = SelectObject(hdc, g_hUiFont);
 	}
-	TextOut(hdc, m_rectCurrent.left, m_rectCurrent.top, szCurrentTime, lstrlen(szCurrentTime));
+	TextOut(hdc, g_rectCurrent.left, g_rectCurrent.top, szCurrentTime, lstrlen(szCurrentTime));
 	if (NULL != hOldFont)
 	{
 		SelectObject(hdc, hOldFont);
@@ -876,7 +878,7 @@ void CPlayerView::UpdateRectCurreTime(HDC hdc, const TCHAR szCurrentTime[])
  */
 void CPlayerView::InvalidateRectCurrentTime()
 {
-	InvalidateRect(m_hWnd, &m_rectCurrent, TRUE);
+	InvalidateRect(m_hWnd, &g_rectCurrent, TRUE);
 	return ;
 }
 
@@ -886,7 +888,7 @@ void CPlayerView::InvalidateRectCurrentTime()
 void CPlayerView::InvalidateRectTotalTime()
 {
 	InvalidateRectCurrentTime();
-	InvalidateRect(m_hWnd, &m_rectEnd, TRUE);
+	InvalidateRect(m_hWnd, &g_rectEnd, TRUE);
 	return ;
 }
 
