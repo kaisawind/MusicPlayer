@@ -1,5 +1,7 @@
 # MusicPlayer
 
+当前版本：v1.1.0
+
 ## 1. 概述
 
 原 VS2012 工程，已升级到 VS 18 (Visual Studio 2026)

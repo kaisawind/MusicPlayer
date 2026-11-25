@@ -2,6 +2,7 @@
 // Microsoft Visual C++ 生成的包含文件。
 // 供 MusicPlayer.rc 使用
 //
+#define VS_VERSION_INFO                 1
 #define IDC_MYICON                      2
 #define IDD_MUSICPLAYER_DIALOG          102
 #define IDS_APP_TITLE                   103
