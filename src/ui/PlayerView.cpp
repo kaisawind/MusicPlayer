@@ -687,6 +687,31 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 * @time		:	2013-3-31 19:37:18
 * @history	:	
 ******************************************************************************/
+// 返回当前选中索引；没有选中时返回 LB_ERR。
+int CPlayerView::GetCurrentIndex()
+{
+	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
+	return (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
+}
+
+// 按索引读取歌曲名；失败返回 LB_ERR。
+int CPlayerView::GetSongNameByIndex(int iIndex, TCHAR* szName, int cchName)
+{
+	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
+	return GetListText(hwndListTable, iIndex, szName, cchName);
+}
+
+// 选中指定索引；越界时忽略。
+void CPlayerView::SetListIndex(int iIndex)
+{
+	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
+	int iCount = (int)SendMessage(hwndListTable, LB_GETCOUNT, 0, 0);
+	if ((iIndex >= 0) && (iIndex < iCount))
+	{
+		SendMessage(hwndListTable, LB_SETCURSEL, iIndex, 0);
+	}
+}
+
 int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName, int cchCurrentSelectName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);

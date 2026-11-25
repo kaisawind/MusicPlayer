@@ -40,6 +40,9 @@ public:
 	void SetListTopIndex(int);
 	void InitScrollList();
 	void UpdateScrollList(WPARAM, LPARAM);
+	int GetCurrentIndex();
+	int GetSongNameByIndex(int, TCHAR*, int);
+	void SetListIndex(int);
 	int GetCurrentSelectListName(TCHAR*, int);
 	LRESULT UpdateScrollListByMouse(int, bool, UINT, WPARAM, LPARAM);
 	void UpdateRectBeginTime(HDC, const TCHAR[]);

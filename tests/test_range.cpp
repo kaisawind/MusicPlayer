@@ -35,6 +35,16 @@ int main()
 	CHECK(PrevIndex(2, 3) == 1);
 	CHECK(PrevIndex(99, 2) == 0);
 
+	CHECK(NextIndexForMode(0, 0, PlayModeSequential, 0) == -1);
+	CHECK(NextIndexForMode(-1, 3, PlayModeSequential, 0) == 1);
+	CHECK(NextIndexForMode(1, 3, PlayModeSequential, 0) == 2);
+	CHECK(NextIndexForMode(2, 3, PlayModeSequential, 0) == -1);
+	CHECK(NextIndexForMode(2, 3, PlayModeRepeatOne, 0) == 2);
+	CHECK(NextIndexForMode(2, 3, PlayModeRepeatAll, 0) == 0);
+	CHECK(NextIndexForMode(1, 3, PlayModeShuffle, 1) == 2);
+	CHECK(NextIndexForMode(1, 3, PlayModeShuffle, 2) == 2);
+	CHECK(NextIndexForMode(1, 1, PlayModeShuffle, 0) == 0);
+
 	if (0 == failures)
 	{
 		std::printf("all tests passed\n");

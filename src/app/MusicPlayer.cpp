@@ -8,12 +8,14 @@
 
 #include "stdafx.h"
 #include "MusicPlayer.h"
+#include "Range.h"
 #include <commdlg.h>
 
 static HINSTANCE hInst;
 static TCHAR szTitle[MAX_LOADSTRING];
 static TCHAR szWindowClass[MAX_LOADSTRING];
 static bool g_bPageScroll = false;
+static PlayMode g_playMode = PlayModeSequential;
 
 static void SetWorkingDirectoryToExe()
 {
@@ -26,6 +28,59 @@ static void SetWorkingDirectoryToExe()
 			*pSlash = TEXT('\0');
 			SetCurrentDirectory(szPath);
 		}
+	}
+}
+
+// 取 exe 所在目录。
+static void GetExeDirectory(TCHAR* szDir, int cchDir)
+{
+	szDir[0] = TEXT('\0');
+	if (0 == GetModuleFileName(NULL, szDir, cchDir))
+	{
+		return ;
+	}
+
+	TCHAR* pSlash = _tcsrchr(szDir, TEXT('\\'));
+	if (NULL != pSlash)
+	{
+		*pSlash = TEXT('\0');
+	}
+}
+
+// 取 MusicPlayer.ini 的完整路径。
+static void GetSettingsPath(TCHAR* szPath, int cchPath)
+{
+	TCHAR szDir[MAX_PATH] = L"";
+	GetExeDirectory(szDir, MAX_PATH);
+	lstrcpynW(szPath, szDir, cchPath);
+	int iLength = lstrlenW(szPath);
+	lstrcpynW(szPath + iLength, TEXT("\\MusicPlayer.ini"), cchPath - iLength);
+}
+
+// 从 ini 恢复上次工作目录。
+static void LoadLastDirectory()
+{
+	TCHAR szIni[MAX_PATH] = L"";
+	TCHAR szDir[MAX_PATH] = L"";
+
+	GetSettingsPath(szIni, MAX_PATH);
+	GetPrivateProfileString(TEXT("Settings"), TEXT("LastDir"), TEXT(""), szDir, MAX_PATH, szIni);
+	if (TEXT('\0') != szDir[0])
+	{
+		SetCurrentDirectory(szDir);
+	}
+}
+
+// 把当前工作目录写入 ini。
+static void SaveLastDirectory()
+{
+	TCHAR szIni[MAX_PATH] = L"";
+	TCHAR szDir[MAX_PATH] = L"";
+
+	if (0 != GetCurrentDirectory(MAX_PATH, szDir))
+	{
+		GetSettingsPath(szIni, MAX_PATH);
+		WritePrivateProfileString(TEXT("Settings"), TEXT("LastDir"), szDir, szIni);
 	}
 }
 
@@ -130,6 +185,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    hInst = hInstance; // 将实例句柄存储在全局变量中
    SetWorkingDirectoryToExe();
+   LoadLastDirectory();
 
    hWnd = CreateWindow(szWindowClass, 		// 主窗口类名
 	   szTitle, 							// 标题栏文本
@@ -184,6 +240,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 		SetTimer(hWnd, TIMER_TIMERPROC_ID, 1000, TimerProc);
+		// 初始化播放模式和随机种子
+		CheckMenuRadioItem(GetMenu(hWnd), IDM_MODE_SEQ, IDM_MODE_SHUFFLE, IDM_MODE_SEQ, MF_BYCOMMAND);
+		srand((unsigned int)GetTickCount());
 		// 窗口布局
 		obj.InitWindows();
 		obj.InitListTable();
@@ -268,6 +327,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
+		SaveLastDirectory();
 		KillTimer(hWnd, TIMER_TIMERPROC_ID);
 		PostQuitMessage(0);
 		break;
@@ -356,6 +416,7 @@ static bool BrowseForFile(HWND hWnd, TCHAR* szFile, int cchFile)
 *			:	IDM_STOP	- 停止菜单
 *			:	IDM_PRESONG	- 上一曲菜单
 *			:	IDM_NEXTSONG	- 下一曲菜单
+*			:	IDM_MODE_*	- 顺序/单曲循环/列表循环/随机
 *			:	IDM_ABOUT	- 关于菜单
 *			:	IDM_EXIT	- 退出菜单
 * @in		:	HWND hWnd : 窗口句柄
@@ -468,6 +529,7 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			*pSlash = TEXT('\0');
 			SetCurrentDirectory(szDir);
 		}
+		SaveLastDirectory();
 
 		obj.InitListTable();
 		obj.InitScrollList();
@@ -482,6 +544,29 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	}
+	// 播放模式（菜单单选）
+	case IDM_MODE_SEQ:
+	case IDM_MODE_REPEAT_ONE:
+	case IDM_MODE_REPEAT_ALL:
+	case IDM_MODE_SHUFFLE:
+		if (IDM_MODE_SEQ == wmId)
+		{
+			g_playMode = PlayModeSequential;
+		}
+		else if (IDM_MODE_REPEAT_ONE == wmId)
+		{
+			g_playMode = PlayModeRepeatOne;
+		}
+		else if (IDM_MODE_REPEAT_ALL == wmId)
+		{
+			g_playMode = PlayModeRepeatAll;
+		}
+		else
+		{
+			g_playMode = PlayModeShuffle;
+		}
+		CheckMenuRadioItem(GetMenu(hWnd), IDM_MODE_SEQ, IDM_MODE_SHUFFLE, wmId, MF_BYCOMMAND);
+		break;
 	case IDM_ABOUT:
 		DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 		break;
@@ -668,7 +753,7 @@ int GetMouseDeltaPerLine()
 
 /*****************************************************************************
 * @func		:	TimerProc
-* @summary	:	每秒更新进度；播放结束时自动切换下一曲
+* @summary	:	每秒更新进度；播放结束时按播放模式切换下一曲
 * @in		:	HWND hWnd : 窗口句柄
 *			:	UINT message : 消息
 *			:	WPARAM wParam : wParam
@@ -688,15 +773,20 @@ void CALLBACK TimerProc(HWND hWnd, UINT message, UINT iTimerID, DWORD dwTime)
 		{
 			AudioPlayer->MusicStop();
 
-			// 自动播放下一曲；已经是最后一曲时保持停止
-			TCHAR szNext[MAX_PATH] = L"";
-			if ((LB_ERR != obj.GetNextSongName(szNext, MAX_PATH)) &&
-				(0 != lstrcmp(szNext, AudioPlayer->GetFileStatus()->szFileName)) &&
-				PlayFile(hWnd, szNext))
+			// 按播放模式自动切换下一曲；顺序模式到末尾时停止
+			int iCount = obj.GetSongsCount();
+			int iCurrent = obj.GetCurrentIndex();
+			int iNext = NextIndexForMode(iCurrent, iCount, g_playMode, (unsigned int)rand());
+			if (iNext >= 0)
 			{
-				obj.SetNextIndex();
-				obj.InvalidateRectTotalTime();
-				obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+				TCHAR szNext[MAX_PATH] = L"";
+				if ((LB_ERR != obj.GetSongNameByIndex(iNext, szNext, MAX_PATH)) &&
+					PlayFile(hWnd, szNext))
+				{
+					obj.SetListIndex(iNext);
+					obj.InvalidateRectTotalTime();
+					obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+				}
 			}
 
 			obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);

@@ -45,3 +45,54 @@ inline int PrevIndex(int current, int count)
 	}
 	return current - 1;
 }
+
+enum PlayMode
+{
+	PlayModeSequential = 0,
+	PlayModeRepeatOne,
+	PlayModeRepeatAll,
+	PlayModeShuffle
+};
+
+// 按播放模式返回下一首索引；顺序模式到末尾返回 -1，空列表返回 -1。
+// randomValue 由调用者传入 rand()，便于测试随机分支。
+inline int NextIndexForMode(int current, int count, PlayMode mode, unsigned int randomValue)
+{
+	if (count <= 0)
+	{
+		return -1;
+	}
+	if (current < 0)
+	{
+		current = 0;
+	}
+	else if (current >= count)
+	{
+		current = count - 1;
+	}
+
+	switch (mode)
+	{
+	case PlayModeSequential:
+		return (current + 1 < count) ? (current + 1) : -1;
+	case PlayModeRepeatOne:
+		return current;
+	case PlayModeRepeatAll:
+		return (current + 1) % count;
+	case PlayModeShuffle:
+		if (1 == count)
+		{
+			return 0;
+		}
+		{
+			int next = (int)(randomValue % (unsigned int)count);
+			if (next == current)
+			{
+				next = (next + 1) % count;
+			}
+			return next;
+		}
+	default:
+		return -1;
+	}
+}

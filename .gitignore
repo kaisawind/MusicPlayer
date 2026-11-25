@@ -165,3 +165,6 @@ pip-log.txt
 # CMake / Visual Studio
 build-vs/
 .vs/
+
+# 运行期配置
+MusicPlayer.ini

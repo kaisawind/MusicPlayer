@@ -18,6 +18,10 @@
 #define IDM_PRESONG                     32786
 #define IDM_OPEN                        32780
 #define IDM_PLAY                        32789
+#define IDM_MODE_SEQ                    32791
+#define IDM_MODE_REPEAT_ONE             32792
+#define IDM_MODE_REPEAT_ALL             32793
+#define IDM_MODE_SHUFFLE                32794
 #define IDM_PAUSE                       32790
 #define IDC_STATIC                      -1
 
