@@ -1,13 +1,14 @@
 ﻿/********************************************************************************
-* @file		:	CMusicProcessor.h
+* @file		:	AudioPlayer.h
 * @summary	:	对libzplay开源库进行封转，MusicPlayer动作的处理类
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 14:53:06
 * @history	:	
 ********************************************************************************/
 
-#ifndef __CMUSICPROCESSOR_H__
-#define __CMUSICPROCESSOR_H__
+#ifndef __CAUDIOPLAYER_H__
+#define __CAUDIOPLAYER_H__
+#include "Common.h"
 #include "libzplay.h"
 #pragma comment(lib, "libzplay.lib")
 using namespace libZPlay;
@@ -15,8 +16,6 @@ using namespace libZPlay;
 #define COPY_CONSTRUCTOR_ASSIGNMENT(type) \
 	type(const type&);\
 	void operator=(const type)
-
-#define MAX_LOADSTRING 100						// 最大字符数目
 
 // 支持的文件格式种类
 enum enumMusicFormat_em
@@ -52,13 +51,12 @@ struct tagFileStatus_t
 	TCHAR szTotalTime[MAX_LOADSTRING + 1];	// 歌曲播放总时间
 };
 
-class CMusicProcessor
+class CAudioPlayer
 {
 	// 共有成员函数
 public:
-	static CMusicProcessor* getInstance(void );
+	static CAudioPlayer* getInstance(void );
 	int OpenFile(const TCHAR*);
-	TCHAR* GetZPlayError();
 	int MusicPlay();
 	int MusicPause();
 	int MusicStop();
@@ -81,9 +79,9 @@ private:
 
 	// 私有函数成员
 private:
-	CMusicProcessor();
-	COPY_CONSTRUCTOR_ASSIGNMENT(CMusicProcessor);
+	CAudioPlayer();
+	COPY_CONSTRUCTOR_ASSIGNMENT(CAudioPlayer);
 	void SetMusicTotalTime();
-};	// CMusicProcessor
+};	// CAudioPlayer
 
-#endif // __CMUSICPROCESSOR_H__
+#endif // __CAUDIOPLAYER_H__

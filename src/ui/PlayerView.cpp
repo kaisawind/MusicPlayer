@@ -1,73 +1,40 @@
 ﻿/********************************************************************************
-* @file		:	CViewerProcessor.h
+* @file		:	PlayerView.h
 * @summary	:	MusicPlayer视图控制类的实现。
 * @author	:	Li Jiachun
 * @time		:	2013-3-29 20:48:05
 * @history	:	
 ********************************************************************************/
 #include "stdafx.h"
-#include "CViewerProcessor.h"
+#include "PlayerView.h"
 #include <algorithm>
 
-/*****************************************************************************
-* @func		:	CViewerProcessor
-* @summary	:	有参の构造函数
-* @in		:	HINSTANCE hInst : 实例句柄
-*			:	HWND hWnd : 窗口实例
-*			:	UINT message	: 消息
-*			:	WPARAM wParam	: wParam
-*			:	LPARAM lParam	: lParam
-* @out		:	none
-* @return	:	0
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:34:07
-* @history	:	
-******************************************************************************/
-CViewerProcessor::CViewerProcessor(HINSTANCE hInst, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+namespace
 {
-	this->m_hWnd = hWnd;
-	this->m_message = message;
-	this->m_wParam = wParam;
-	this->m_lParam = lParam;
+const TCHAR szButtonClass[] = TEXT("button");
+const TCHAR szScrollBarClass[] = TEXT("scrollbar");
+const TCHAR szListBox[] = TEXT("listbox");
+const TCHAR szStaticClass[] = TEXT("static");
+
+const TCHAR szREWTitle[] = TEXT("快退");
+const TCHAR szFFTitle[] = TEXT("快进");
+const TCHAR szPlayPauseTitle[2][3] = {TEXT("播放"), TEXT("暂停")};
+const TCHAR szStopTitle[] = TEXT("停止");
+const TCHAR szUPTitle[] = TEXT("上一曲");
+const TCHAR szDOWNTitle[] = TEXT("下一曲");
+
+const RECT rectBegin = {110, 410, 190, 430};
+const RECT rectEnd = {610, 410, 690, 430};
+const RECT rectCurrent = {360, 410, 440, 430};
+
+const DWORD LBS_USER = LBS_NOTIFY | LBS_SORT | WS_BORDER;
+const int MAX_PLAYER_VOLUME = 100;
+}
+
+CPlayerView::CPlayerView(HINSTANCE hInst, HWND hWnd)
+{
 	this->m_hInst = hInst;
-}
-
-/*****************************************************************************
-* @func		:	CViewerProcessor
-* @summary	:	无参の构造函数
-* @in		:	void
-* @out		:	none
-* @return	:	0
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:34:07
-* @history	:	
-******************************************************************************/
-CViewerProcessor::CViewerProcessor()
-{
-	this->m_hWnd = NULL;
-	this->m_hWnd = NULL;
-	this->m_message = NULL;
-	this->m_wParam = NULL;
-	this->m_lParam = NULL;
-}
-
-/*****************************************************************************
-* @func		:	CViewerProcessor
-* @summary	:	拷贝构造函数
-* @in		:	const CViewerProcessor& obj	: 类的对象
-* @out		:	none
-* @return	:	0
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:35:16
-* @history	:	
-******************************************************************************/
-CViewerProcessor::CViewerProcessor(const CViewerProcessor& obj)
-{
-	this->m_hInst = obj.m_hInst;
-	this->m_hWnd = obj.m_hWnd;
-	this->m_lParam = obj.m_lParam;
-	this->m_message = obj.m_message;
-	this->m_wParam = obj.m_wParam;
+	this->m_hWnd = hWnd;
 }
 
 /*****************************************************************************
@@ -81,7 +48,7 @@ CViewerProcessor::CViewerProcessor(const CViewerProcessor& obj)
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateButtonPreSong()
+int CPlayerView::CreateButtonPreSong()
 {
 	int iRet = FALSE;
 	HWND hwndPreSong = CreateWindow(szButtonClass, 	// Button类名
@@ -113,7 +80,7 @@ int CViewerProcessor::CreateButtonPreSong()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateButtonNextSong()
+int CPlayerView::CreateButtonNextSong()
 {
 	int iRet = FALSE;
 	HWND hwndNextSong = CreateWindow(szButtonClass, // Button类名
@@ -145,7 +112,7 @@ int CViewerProcessor::CreateButtonNextSong()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateButtonREW()
+int CPlayerView::CreateButtonREW()
 {
 	int iRet = FALSE;
 	HWND hwndREW = CreateWindow(szButtonClass, 		// Button类名
@@ -178,7 +145,7 @@ int CViewerProcessor::CreateButtonREW()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateButtonFF()
+int CPlayerView::CreateButtonFF()
 {
 	int iRet = FALSE;
 	HWND hwndFF = CreateWindow(szButtonClass, 		// Button类名
@@ -211,7 +178,7 @@ int CViewerProcessor::CreateButtonFF()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateButtonStop()
+int CPlayerView::CreateButtonStop()
 {
 	int iRet = FALSE;
 	HWND hwndStop = CreateWindow(szButtonClass, 	// Button类名
@@ -245,7 +212,7 @@ int CViewerProcessor::CreateButtonStop()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateButtonPlayPause()
+int CPlayerView::CreateButtonPlayPause()
 {
 	int iRet = FALSE;
 	HWND hwndPlayPause = CreateWindow(szButtonClass,// Button类名
@@ -279,7 +246,7 @@ int CViewerProcessor::CreateButtonPlayPause()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateScrollList()
+int CPlayerView::CreateScrollList()
 {
 	int iRet = FALSE;
 	HWND hwndScrollList = CreateWindow(szScrollBarClass,	// Button类名
@@ -312,7 +279,7 @@ int CViewerProcessor::CreateScrollList()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateScrollTime()
+int CPlayerView::CreateScrollTime()
 {
 	int iRet = FALSE;
 	HWND hwndScrollTime = CreateWindow(szScrollBarClass,	// Button类名
@@ -347,7 +314,7 @@ int CViewerProcessor::CreateScrollTime()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateScrollVolume()
+int CPlayerView::CreateScrollVolume()
 {
 	int iRet = FALSE;
 	HWND hwndScrollVolume = CreateWindow(szScrollBarClass,	// Button类名
@@ -381,7 +348,7 @@ int CViewerProcessor::CreateScrollVolume()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateListTable()
+int CPlayerView::CreateListTable()
 {
 	int iRet = FALSE;
 
@@ -416,7 +383,7 @@ int CViewerProcessor::CreateListTable()
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::CreateListPath()
+int CPlayerView::CreateListPath()
 {
 	int iRet = FALSE;
 
@@ -451,7 +418,7 @@ int CViewerProcessor::CreateListPath()
 * @time		:	2013-3-29 20:43:03
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::ShowPlayOrPause(bool bPlay)
+void CPlayerView::ShowPlayOrPause(bool bPlay)
 {
 	HWND hwndChild = GetDlgItem(m_hWnd, BUTTON_PLAYPAUSE_ID);
 
@@ -477,36 +444,17 @@ void CViewerProcessor::ShowPlayOrPause(bool bPlay)
 * @time		:	2013-3-29 20:36:36
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::InitListTable()
+void CPlayerView::InitListTable()
 {
 	TCHAR szBuffer[MAX_LOADSTRING + 1];
 	HWND hwndListPath = GetDlgItem(m_hWnd, STATIC_LISTPATH_ID);
-	GetCurrentDirectory(lstrlen(szBuffer), szBuffer);
+	GetCurrentDirectory(MAX_LOADSTRING, szBuffer);
 	SetWindowText(hwndListPath, szBuffer);
 
 	HWND hwndChild = GetDlgItem(m_hWnd, LIST_TABLE_ID);
 	SendMessage(hwndChild, LB_DIR, DDL_READWRITE | DDL_DIRECTORY, (LPARAM)TEXT("*.MP3"));
 	SendMessage(hwndChild, LB_DIR, DDL_READWRITE | DDL_DIRECTORY, (LPARAM)TEXT("*.WAV"));
 	SendMessage(hwndChild, LB_SETCURSEL, 0, TRUE);
-
-	return ;
-}
-
-/*****************************************************************************
-* @func		:	ShowListTable
-* @summary	:	更新歌曲播放列表
-* @in		:	void
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
-void CViewerProcessor::UpdateListTable()
-{
-	HWND hwndChild = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	SendMessage(hwndChild, LB_RESETCONTENT, 0, 0);
-	SendMessage(hwndChild, LB_DIR, DDL_READWRITE, (LPARAM)TEXT("*.*"));
 
 	return ;
 }
@@ -522,7 +470,7 @@ void CViewerProcessor::UpdateListTable()
 * @time		:	2013-3-24 21:02:57
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::InitWindows()
+int CPlayerView::InitWindows()
 {
 	if (CreateButtonFF()		&& 
 		CreateButtonNextSong()	&& 
@@ -552,7 +500,7 @@ int CViewerProcessor::InitWindows()
 * @time		:	2013-3-30 11:30:04
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::GetSongsCount()
+int CPlayerView::GetSongsCount()
 {
 	int iNo = 0;
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -570,7 +518,7 @@ int CViewerProcessor::GetSongsCount()
 * @time		:	2013-3-30 11:30:04
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::GetListTopIndex()
+int CPlayerView::GetListTopIndex()
 {
 	int iIndex = 0;
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -588,10 +536,10 @@ int CViewerProcessor::GetListTopIndex()
 * @time		:	2013-3-30 11:30:04
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::SetListTopIndex(int iIndex)
+void CPlayerView::SetListTopIndex(int iIndex)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	iIndex = SendMessage(hwndListTable, LB_SETTOPINDEX, iIndex, 0);
+	SendMessage(hwndListTable, LB_SETTOPINDEX, iIndex, 0);
 	return ;
 }
 
@@ -605,7 +553,7 @@ void CViewerProcessor::SetListTopIndex(int iIndex)
 * @time		:	2013-3-30 11:30:04
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::InitScrollList()
+void CPlayerView::InitScrollList()
 {
 	TEXTMETRIC tm;
 	RECT rect;
@@ -636,14 +584,14 @@ void CViewerProcessor::InitScrollList()
 * @time		:	2013-3-30 11:30:04
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::UpdateScrollList()
+void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 {
-	if (SCROLL_LIST_ID != GetWindowLong((HWND)m_lParam, GWL_ID))
+	if (SCROLL_LIST_ID != GetWindowLong((HWND)lParam, GWL_ID))
 	{
 		return ;
 	}
 	static int iIndex = 0;
-	switch(LOWORD(m_wParam))
+	switch(LOWORD(wParam))
 	{
 	case SB_PAGEDOWN:
 		iIndex++;
@@ -665,12 +613,12 @@ void CViewerProcessor::UpdateScrollList()
 		break;
 	case SB_THUMBTRACK:
 	case SB_THUMBPOSITION:
-		iIndex = HIWORD(m_wParam);
+		iIndex = HIWORD(wParam);
 		break;
 	default:
 		break;
 	}
-	SetScrollPos((HWND)m_lParam, SB_CTL, iIndex, TRUE);
+	SetScrollPos((HWND)lParam, SB_CTL, iIndex, TRUE);
 	SetListTopIndex(iIndex);
 	return ;
 }
@@ -685,7 +633,7 @@ void CViewerProcessor::UpdateScrollList()
 * @time		:	2013-3-31 19:37:18
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::GetCurrentSelectListName(TCHAR* szCurrentSelectName)
+int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
 	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
@@ -704,16 +652,16 @@ int CViewerProcessor::GetCurrentSelectListName(TCHAR* szCurrentSelectName)
 * @time		:	2013-3-31 19:39:06
 * @history	:	
 ******************************************************************************/
-LRESULT CViewerProcessor::UpdateScrollListByMouse(int iDeltaPerLine)
+LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (0 == iDeltaPerLine)
 	{
-		return DefWindowProc(m_hWnd, m_message, m_wParam, m_lParam);
+		return DefWindowProc(m_hWnd, message, wParam, lParam);
 	}
 
 	HWND hwndScrollList = GetDlgItem(m_hWnd, SCROLL_LIST_ID);
 
-	int iAccumDelta = (short)HIWORD(m_wParam);
+	int iAccumDelta = (short)HIWORD(wParam);
 
 	// 向下滚动鼠标
 	while (iAccumDelta >= iDeltaPerLine)
@@ -741,7 +689,7 @@ LRESULT CViewerProcessor::UpdateScrollListByMouse(int iDeltaPerLine)
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::UpdateRectBeginTime(TCHAR szBeginTime[])
+void CPlayerView::UpdateRectBeginTime(const TCHAR szBeginTime[])
 {
 	HDC hdc = GetDC(m_hWnd);
 	TextOut(hdc, rectBegin.left, rectBegin.top, szBeginTime, lstrlen(szBeginTime));
@@ -759,7 +707,7 @@ void CViewerProcessor::UpdateRectBeginTime(TCHAR szBeginTime[])
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::UpdateRectTotalTime(TCHAR szTotalTime[])
+void CPlayerView::UpdateRectTotalTime(const TCHAR szTotalTime[])
 {
 	// 更新总时间时会把当前播放到的时间更新掉
 	//UpdateRectCurreTime(TEXT("00:00:000"));
@@ -779,7 +727,7 @@ void CViewerProcessor::UpdateRectTotalTime(TCHAR szTotalTime[])
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::UpdateRectCurreTime(TCHAR szCurrentTime[])
+void CPlayerView::UpdateRectCurreTime(const TCHAR szCurrentTime[])
 {
 	HDC hdc = GetDC(m_hWnd);
 	TextOut(hdc, rectCurrent.left, rectCurrent.top, szCurrentTime, lstrlen(szCurrentTime));
@@ -797,7 +745,7 @@ void CViewerProcessor::UpdateRectCurreTime(TCHAR szCurrentTime[])
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::InvalidateRectCurrentTime()
+void CPlayerView::InvalidateRectCurrentTime()
 {
 	InvalidateRect(m_hWnd, &rectCurrent, TRUE);
 	return ;
@@ -813,7 +761,7 @@ void CViewerProcessor::InvalidateRectCurrentTime()
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::InvalidateRectTotalTime()
+void CPlayerView::InvalidateRectTotalTime()
 {
 	InvalidateRectCurrentTime();
 	InvalidateRect(m_hWnd, &rectEnd, TRUE);
@@ -830,7 +778,7 @@ void CViewerProcessor::InvalidateRectTotalTime()
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::InitScrollTime(int iTotalTime)
+void CPlayerView::InitScrollTime(int iTotalTime)
 {
 	HWND hwndScrollTime = GetDlgItem(m_hWnd, SCROLL_TIME_ID);
 
@@ -849,7 +797,7 @@ void CViewerProcessor::InitScrollTime(int iTotalTime)
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::GetPreviousSongName(TCHAR* szPreSongName)
+int CPlayerView::GetPreviousSongName(TCHAR* szPreSongName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
 	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
@@ -868,7 +816,7 @@ int CViewerProcessor::GetPreviousSongName(TCHAR* szPreSongName)
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-int CViewerProcessor::GetNextSongName(TCHAR* szNextName)
+int CPlayerView::GetNextSongName(TCHAR* szNextName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
 	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
@@ -887,7 +835,7 @@ int CViewerProcessor::GetNextSongName(TCHAR* szNextName)
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::SetPreviousIndex()
+void CPlayerView::SetPreviousIndex()
 {
 	TCHAR szSelectName[MAX_LOADSTRING + 1] = L"";
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -908,7 +856,7 @@ void CViewerProcessor::SetPreviousIndex()
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CViewerProcessor::SetNextIndex()
+void CPlayerView::SetNextIndex()
 {
 	TCHAR szSelectName[MAX_LOADSTRING + 1] = L"";
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -919,7 +867,7 @@ void CViewerProcessor::SetNextIndex()
 	return ;
 }
 
-void CViewerProcessor::InitScrollVolume(unsigned int iVolume)
+void CPlayerView::InitScrollVolume(unsigned int iVolume)
 {
 	HWND hwndScrollVolume = GetDlgItem(m_hWnd, SCROLL_VOLUME_ID);
 	SetScrollRange(hwndScrollVolume, SB_CTL, 0, MAX_PLAYER_VOLUME, FALSE);
@@ -927,14 +875,14 @@ void CViewerProcessor::InitScrollVolume(unsigned int iVolume)
 	return ;
 }
 
-void CViewerProcessor::UpdateScrollVolume(unsigned int& iVolume)
+void CPlayerView::UpdateScrollVolume(unsigned int& iVolume, WPARAM wParam, LPARAM lParam)
 {
-	if (SCROLL_VOLUME_ID != GetWindowLong((HWND)m_lParam, GWL_ID))
+	if (SCROLL_VOLUME_ID != GetWindowLong((HWND)lParam, GWL_ID))
 	{
 		return ;
 	}
 	static unsigned int iIndex = iVolume;
-	switch(LOWORD(m_wParam))
+	switch(LOWORD(wParam))
 	{
 	case SB_PAGEDOWN:
 		iIndex--;
@@ -956,17 +904,17 @@ void CViewerProcessor::UpdateScrollVolume(unsigned int& iVolume)
 		break;
 	case SB_THUMBTRACK:
 	case SB_THUMBPOSITION:
-		iIndex = MAX_PLAYER_VOLUME - HIWORD(m_wParam);
+		iIndex = MAX_PLAYER_VOLUME - HIWORD(wParam);
 		break;
 	default:
 		break;
 	}
-	SetScrollPos((HWND)m_lParam, SB_CTL, MAX_PLAYER_VOLUME - iIndex, TRUE);
+	SetScrollPos((HWND)lParam, SB_CTL, MAX_PLAYER_VOLUME - iIndex, TRUE);
 	iVolume = iIndex;
 	return ;
 }
 
-void CViewerProcessor::UpdateScrollTime(unsigned int iTime)
+void CPlayerView::UpdateScrollTime(unsigned int iTime)
 {
 	HWND hwndScrollTime = GetDlgItem(m_hWnd, SCROLL_TIME_ID);
 	SetScrollPos(hwndScrollTime, SB_CTL, iTime, TRUE);

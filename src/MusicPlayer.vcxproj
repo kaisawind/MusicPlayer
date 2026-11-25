@@ -55,7 +55,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <BrowseInformation>true</BrowseInformation>
-      <AdditionalIncludeDirectories>..\third_party\libzplay;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>app;audio;ui;common;res;..\third_party\libzplay;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -63,7 +63,7 @@
       <AdditionalLibraryDirectories>..\third_party\libzplay;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)res;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)res;$(ProjectDir)common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
@@ -78,7 +78,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\third_party\libzplay;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>app;audio;ui;common;res;..\third_party\libzplay;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -88,35 +88,30 @@
       <AdditionalLibraryDirectories>..\third_party\libzplay;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)res;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)res;$(ProjectDir)common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="CFilesProcessor.h" />
-    <ClInclude Include="CMusicProcessor.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="CViewerProcessor.h" />
+    <ClInclude Include="app\MusicPlayer.h" />
+    <ClInclude Include="audio\AudioPlayer.h" />
+    <ClInclude Include="common\Common.h" />
+    <ClInclude Include="common\stdafx.h" />
+    <ClInclude Include="common\targetver.h" />
     <ClInclude Include="..\third_party\libzplay\libzplay.h" />
-    <ClInclude Include="MusicPlayer.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClInclude Include="res\resource.h" />
+    <ClInclude Include="ui\PlayerView.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CFilesProcessor.cpp" />
-    <ClCompile Include="CMusicProcessor.cpp" />
-    <ClCompile Include="Common.cpp">
+    <ClCompile Include="app\MusicPlayer.cpp" />
+    <ClCompile Include="audio\AudioPlayer.cpp" />
+    <ClCompile Include="common\Common.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="CViewerProcessor.cpp" />
-    <ClCompile Include="MusicPlayer.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="common\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ui\PlayerView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\MusicPlayer.rc" />

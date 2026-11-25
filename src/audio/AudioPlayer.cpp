@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* @file		:	CMusicProcessor.cpp
+* @file		:	AudioPlayer.cpp
 * @summary	:	对libzplay开源库进行封转，MusicPlayer动作的处理类
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 14:53:06
@@ -7,29 +7,29 @@
 ********************************************************************************/
 
 #include "stdafx.h"
-#include "CMusicProcessor.h"
+#include "AudioPlayer.h"
 
 // 私有静态数据成员初始化
-ZPlay* CMusicProcessor::player = CreateZPlay();
+ZPlay* CAudioPlayer::player = CreateZPlay();
 
 /*****************************************************
 *	@func	:	getInstance
 *	@summary:	单例模式实现
 *	@in		:	void
 *	@out	:	none
-*	@return	:	CMusicProcessor*
+*	@return	:	CAudioPlayer*
 *	@author	:	DaPPer
 *	@time	:	2013-3-24 15:08:21
 *	@history:	
 ******************************************************/
-CMusicProcessor* CMusicProcessor::getInstance(void )
+CAudioPlayer* CAudioPlayer::getInstance(void )
 {
-	static CMusicProcessor obj;
+	static CAudioPlayer obj;
 	return &obj;
 }
 
 /*****************************************************
-*	@func	:	CMusicProcessor
+*	@func	:	CAudioPlayer
 *	@summary:	构造函数
 *	@in		:	void
 *	@out	:	none
@@ -38,7 +38,7 @@ CMusicProcessor* CMusicProcessor::getInstance(void )
 *	@time	:	2013-3-24 15:14:37
 *	@history:	
 ******************************************************/
-CMusicProcessor::CMusicProcessor()
+CAudioPlayer::CAudioPlayer()
 {
 	// 文件状态初始化
 	FileStatus.nformat = UNKNOWN;
@@ -64,7 +64,7 @@ CMusicProcessor::CMusicProcessor()
 *	@time	:	2013-3-24 15:46:31
 *	@history:	
 ******************************************************/
-int CMusicProcessor::OpenFile(const TCHAR* szFileName)
+int CAudioPlayer::OpenFile(const TCHAR* szFileName)
 {
 	if (NULL == player)
 	{
@@ -95,25 +95,6 @@ int CMusicProcessor::OpenFile(const TCHAR* szFileName)
 }
 
 /*****************************************************
-*	@func	:	GetZPlayError()
-*	@summary:	获取ZPlay的错误
-*	@in		:	void
-*	@out	:	none
-*	@return	:	ZPlay的错误信息
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 15:48:25
-*	@history:	
-******************************************************/
-TCHAR* CMusicProcessor::GetZPlayError()
-{
-	if (NULL == player)
-	{
-		return NULL;
-	}
-	return player->GetErrorW();
-}
-
-/*****************************************************
 *	@func	:	MusicPlay()
 *	@summary:	播放音乐文件
 *	@in		:	void
@@ -124,7 +105,7 @@ TCHAR* CMusicProcessor::GetZPlayError()
 *	@time	:	2013-3-24 16:06:55
 *	@history:	
 ******************************************************/
-int CMusicProcessor::MusicPlay()
+int CAudioPlayer::MusicPlay()
 {
 	if (NULL == player)
 	{
@@ -173,7 +154,7 @@ int CMusicProcessor::MusicPlay()
 *	@time	:	2013-3-24 16:06:55
 *	@history:	
 ******************************************************/
-int CMusicProcessor::MusicPause()
+int CAudioPlayer::MusicPause()
 {
 	if (NULL == player)
 	{
@@ -210,7 +191,7 @@ int CMusicProcessor::MusicPause()
 *	@time	:	2013-3-24 19:11:03
 *	@history:	
 ******************************************************/
-int CMusicProcessor::MusicStop()
+int CAudioPlayer::MusicStop()
 {
 	// 文件没打开直接返回
 	if ((false == PlayStatus.bFileOpen) || (NULL == player))
@@ -240,7 +221,7 @@ int CMusicProcessor::MusicStop()
 *	@time	:	2013-3-24 22:34:41
 *	@history:	
 ******************************************************/
-tagPlayStatus_t* CMusicProcessor::GetPlayStatus()
+tagPlayStatus_t* CAudioPlayer::GetPlayStatus()
 {
 	return &PlayStatus;
 }
@@ -255,7 +236,7 @@ tagPlayStatus_t* CMusicProcessor::GetPlayStatus()
 *	@time	:	2013-3-24 22:34:41
 *	@history:	
 ******************************************************/
-tagFileStatus_t* CMusicProcessor::GetFileStatus()
+tagFileStatus_t* CAudioPlayer::GetFileStatus()
 {
 	return &FileStatus;
 }
@@ -271,7 +252,7 @@ tagFileStatus_t* CMusicProcessor::GetFileStatus()
 *	@time	:	2013-3-30 16:02:21
 *	@history:	
 ******************************************************/
-int CMusicProcessor::MusicClose()
+int CAudioPlayer::MusicClose()
 {
 	int iRet = FALSE;
 	iRet = player->Close();
@@ -295,7 +276,7 @@ int CMusicProcessor::MusicClose()
 *	@time	:	2013-3-31 20:17:40
 *	@history:	
 ******************************************************/
-int CMusicProcessor::NewMusicPlay(const TCHAR* szFileName)
+int CAudioPlayer::NewMusicPlay(const TCHAR* szFileName)
 {
 	int iRet = FALSE;
 	if (MusicClose()			&&
@@ -318,7 +299,7 @@ int CMusicProcessor::NewMusicPlay(const TCHAR* szFileName)
 *	@time	:	2013-4-3 22:03:40
 *	@history:	
 ******************************************************/
-void CMusicProcessor::SetMusicTotalTime()
+void CAudioPlayer::SetMusicTotalTime()
 {
 	TCHAR szTimeMinute[MAX_LOADSTRING + 1] = L"";
 	TCHAR szTimeSecond[MAX_LOADSTRING + 1] =  L"";
@@ -348,7 +329,7 @@ void CMusicProcessor::SetMusicTotalTime()
 *	@time	:	2013-4-3 22:03:40
 *	@history:	
 ******************************************************/
-void CMusicProcessor::SetMusicCurrentTime()
+void CAudioPlayer::SetMusicCurrentTime()
 {
 	TCHAR szTimeMinute[MAX_LOADSTRING + 1] = L"";
 	TCHAR szTimeSecond[MAX_LOADSTRING + 1] =  L"";
@@ -379,7 +360,7 @@ void CMusicProcessor::SetMusicCurrentTime()
 *	@time	:	2013-4-3 22:03:40
 *	@history:	
 ******************************************************/
-int CMusicProcessor::GetStatus()
+int CAudioPlayer::GetStatus()
 {
 	TStreamStatus status;
 	player->GetStatus(&status);
@@ -397,7 +378,7 @@ int CMusicProcessor::GetStatus()
 *	@time	:	2013-4-3 22:03:40
 *	@history:	
 ******************************************************/
-void CMusicProcessor::Seek(int iTime)
+void CAudioPlayer::Seek(int iTime)
 {
 	TStreamTime pTime;
 	if (0 <= iTime)
@@ -412,21 +393,21 @@ void CMusicProcessor::Seek(int iTime)
 	}
 }
 
-void CMusicProcessor::SetPlayerVolume(int iVolume)
+void CAudioPlayer::SetPlayerVolume(int iVolume)
 {
 	player->SetPlayerVolume(iVolume, iVolume);
 	player->GetPlayerVolume(&(PlayStatus.iLeftVolume), &(PlayStatus.iRightVolume));
 	return ;
 }
 
-unsigned int CMusicProcessor::GetCurrentMilliSecond()
+unsigned int CAudioPlayer::GetCurrentMilliSecond()
 {
 	TStreamTime pTime;
 	player->GetPosition(&pTime);
 	return pTime.ms;
 }
 
-unsigned int CMusicProcessor::GetTotalMilliSecond()
+unsigned int CAudioPlayer::GetTotalMilliSecond()
 {
 	TStreamInfo pInfo;
 	player->GetStreamInfo(&pInfo);

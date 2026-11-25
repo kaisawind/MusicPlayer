@@ -21,26 +21,27 @@ third_party/
     libzplay.h
     libzplay.lib
 src/
-  CFilesProcessor.cpp
-  CFilesProcessor.h
-  CMusicProcessor.cpp
-  CMusicProcessor.h
-  Common.cpp
-  Common.h
-  CViewerProcessor.cpp
-  CViewerProcessor.h
-  MusicPlayer.cpp
-  MusicPlayer.h
   MusicPlayer.vcxproj
   MusicPlayer.vcxproj.filters
-  ReadMe.txt
-  resource.h
-  stdafx.cpp
-  stdafx.h
-  targetver.h
+  app/
+    MusicPlayer.cpp
+    MusicPlayer.h
+  audio/
+    AudioPlayer.cpp
+    AudioPlayer.h
+  common/
+    Common.cpp
+    Common.h
+    stdafx.cpp
+    stdafx.h
+    targetver.h
+  ui/
+    PlayerView.cpp
+    PlayerView.h
   res/
     MusicPlayer.ico
     MusicPlayer.rc
+    resource.h
     small.ico
 ```
 
@@ -58,6 +59,8 @@ MusicPlayer
     ...
     MusicPlayer.exe
 ```
+
+程序启动后会把工作目录切到 exe 所在目录，并列出其中的 MP3/WAV 文件。
 
 ## 4. 使用 CMake 构建
 

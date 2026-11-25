@@ -9,6 +9,24 @@
 #include "stdafx.h"
 #include "MusicPlayer.h"
 
+static HINSTANCE hInst;
+static TCHAR szTitle[MAX_LOADSTRING];
+static TCHAR szWindowClass[MAX_LOADSTRING];
+
+static void SetWorkingDirectoryToExe()
+{
+	TCHAR szPath[MAX_PATH];
+	if (0 != GetModuleFileName(NULL, szPath, MAX_PATH))
+	{
+		TCHAR* pSlash = _tcsrchr(szPath, TEXT('\\'));
+		if (NULL != pSlash)
+		{
+			*pSlash = TEXT('\0');
+			SetCurrentDirectory(szPath);
+		}
+	}
+}
+
 /*****************************************************************************
 * @func		:	int WINAPI WinMain
 * @summary	:	应用程序的入口函数.
@@ -109,6 +127,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    HWND hWnd;
 
    hInst = hInstance; // 将实例句柄存储在全局变量中
+   SetWorkingDirectoryToExe();
 
    hWnd = CreateWindow(szWindowClass, 		// 主窗口类名
 	   szTitle, 							// 标题栏文本
@@ -159,20 +178,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static int iDeltaPerLine = 0;	// 鼠标滚动每行需要的幅度
 	unsigned int iVolume = 0;
 
-	CViewerProcessor obj(hInst, hWnd, message, wParam, lParam);
+	CPlayerView obj(hInst, hWnd);
 	switch (message)
 	{
 	case WM_CREATE:
 		SetTimer(hWnd, TIMER_TIMERPROC_ID, 1000, TimerProc);
-		FilesProc->SetFilesPath(TEXT("D:\\sdcard"));
 		// 窗口布局
 		obj.InitWindows();
 		obj.InitListTable();
 		obj.InitScrollList();
-		obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
-		obj.InitScrollVolume(MusicPlayer->GetPlayStatus()->iRightVolume);
-		// 获取文件的数目
-		FilesProc->SetFilesCount(obj.GetSongsCount());
+		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+		obj.InitScrollVolume(AudioPlayer->GetPlayStatus()->iRightVolume);
 		// 获取鼠标滚动每行需要的幅度
 		iDeltaPerLine = GetMouseDeltaPerLine();
 		break;
@@ -181,20 +197,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case USER_MOUSEHWHEEL:
 	case WM_MOUSEHWHEEL:
-		if (NULL != obj.UpdateScrollListByMouse(iDeltaPerLine))
+	{
+		LRESULT lResult = obj.UpdateScrollListByMouse(iDeltaPerLine, message, wParam, lParam);
+		if (NULL != lResult)
 		{
-			return obj.UpdateScrollListByMouse(iDeltaPerLine);
+			return lResult;
 		}
 		break;
+	}
 	case WM_SIZE:
 		break;
 	case WM_VSCROLL:
 		// 垂直滚动条部品更新
-		obj.UpdateScrollList();
+		obj.UpdateScrollList(wParam, lParam);
 		// 声音滚动条的更新
-		iVolume = MusicPlayer->GetPlayStatus()->iRightVolume;
-		obj.UpdateScrollVolume(iVolume);
-		MusicPlayer->SetPlayerVolume(iVolume);
+		iVolume = AudioPlayer->GetPlayStatus()->iRightVolume;
+		obj.UpdateScrollVolume(iVolume, wParam, lParam);
+		AudioPlayer->SetPlayerVolume(iVolume);
 		break;
 	case WM_HSCROLL:
 		break;
@@ -226,9 +245,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: 在此添加任意绘图代码...		
-		obj.UpdateRectCurreTime(MusicPlayer->GetPlayStatus()->szCurrentTime);
+		obj.UpdateRectCurreTime(AudioPlayer->GetPlayStatus()->szCurrentTime);
 		obj.UpdateRectBeginTime(TEXT("00:00:000"));
-		obj.UpdateRectTotalTime(MusicPlayer->GetFileStatus()->szTotalTime);
+		obj.UpdateRectTotalTime(AudioPlayer->GetFileStatus()->szTotalTime);
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
@@ -280,33 +299,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 /*****************************************************************************
-* @func		:	MessageBoxPrintf(TCHAR* , TCHAR* )
-* @summary	:	错误时弹出的窗口
-* @in		:	TCHAR* szCaption : MessageBox名称
-*			:	TCHAR* szFormate : 格式控制
-* @out		:	none
-* @return	:	MessageBox(NULL, szBuffer, szCaption, 0)
-* @author	:	Li Jiachun
-* @time		:	2013-2-24 20:20:39
-* @history	:	
-******************************************************************************/
-int CDECL MessageBoxPrintf(TCHAR* szCaption, TCHAR* szFormate, ...)
-{
-	TCHAR szBuffer[MAX_LOADSTRING];
-	memset(szBuffer, 0, sizeof(szBuffer));
-
-	va_list pArgList;
-
-	va_start(pArgList, szFormate);
-
-	_vsnwprintf_s(szBuffer, sizeof(szBuffer) / sizeof(TCHAR), szFormate, pArgList);
-
-	va_end(pArgList);
-
-	return MessageBox(NULL, szBuffer, szCaption, 0);
-}
-
-/*****************************************************************************
 * @func		:	MenuProc(HWND , UINT , WPARAM , LPARAM )
 * @summary	:	“菜单”栏的消息处理程序。
 * @message	:	IDM_PLAY	- 播放菜单
@@ -328,59 +320,59 @@ int CDECL MessageBoxPrintf(TCHAR* szCaption, TCHAR* szFormate, ...)
 LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId    = LOWORD(wParam);
-	CViewerProcessor obj(hInst, hWnd, message, wParam, lParam);
+	CPlayerView obj(hInst, hWnd);
 	TCHAR szFileName[MAX_LOADSTRING + 1] = L"";
 
 	switch (wmId)
 	{
 	case IDM_PLAY:
 		obj.GetCurrentSelectListName(szFileName);		
-		if (0 != lstrcmp(szFileName, MusicPlayer->GetFileStatus()->szFileName))
+		if (0 != lstrcmp(szFileName, AudioPlayer->GetFileStatus()->szFileName))
 		{
-			MusicPlayer->NewMusicPlay(szFileName);
+			AudioPlayer->NewMusicPlay(szFileName);
 			obj.InvalidateRectTotalTime();
-			obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
+			obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		}
 		else
 		{
-			MusicPlayer->MusicPlay();
+			AudioPlayer->MusicPlay();
 		}
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_PAUSE:
 		obj.GetCurrentSelectListName(szFileName);		
-		if (0 != lstrcmp(szFileName, MusicPlayer->GetFileStatus()->szFileName))
+		if (0 != lstrcmp(szFileName, AudioPlayer->GetFileStatus()->szFileName))
 		{
-			MusicPlayer->NewMusicPlay(szFileName);
+			AudioPlayer->NewMusicPlay(szFileName);
 			obj.InvalidateRectTotalTime();
-			obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
+			obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		}
 		else
 		{
-			MusicPlayer->MusicPause();
+			AudioPlayer->MusicPause();
 		}
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_STOP:
-		MusicPlayer->MusicStop();
+		AudioPlayer->MusicStop();
 		// obj.InvalidateRectTotalTime();		// 目测停止播放时不需要更新文件播放时间
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_PRESONG:
 		obj.GetPreviousSongName(szFileName);
-		MusicPlayer->NewMusicPlay(szFileName);
+		AudioPlayer->NewMusicPlay(szFileName);
 		obj.SetPreviousIndex();
 		obj.InvalidateRectTotalTime();
-		obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_NEXTSONG:
 		obj.GetNextSongName(szFileName);
-		MusicPlayer->NewMusicPlay(szFileName);
+		AudioPlayer->NewMusicPlay(szFileName);
 		obj.SetNextIndex();
 		obj.InvalidateRectTotalTime();
-		obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_ABOUT:
 		DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -418,50 +410,50 @@ LRESULT ButtonProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId = LOWORD(wParam);
 	int wmEvent = HIWORD(wParam);
-	CViewerProcessor obj(hInst, hWnd, message, wParam, lParam);
+	CPlayerView obj(hInst, hWnd);
 	TCHAR szFileName[MAX_LOADSTRING + 1];
 
 	switch (wmId)
 	{
 	case BUTTON_PRESONG_ID:
 		obj.GetPreviousSongName(szFileName);
-		MusicPlayer->NewMusicPlay(szFileName);
+		AudioPlayer->NewMusicPlay(szFileName);
 		obj.SetPreviousIndex();
 		obj.InvalidateRectTotalTime();
-		obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case BUTTON_PLAYPAUSE_ID:
 		obj.GetCurrentSelectListName(szFileName);		
-		if (0 != lstrcmp(szFileName, MusicPlayer->GetFileStatus()->szFileName))
+		if (0 != lstrcmp(szFileName, AudioPlayer->GetFileStatus()->szFileName))
 		{
-			MusicPlayer->NewMusicPlay(szFileName);
+			AudioPlayer->NewMusicPlay(szFileName);
 			obj.InvalidateRectTotalTime();
-			obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
+			obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		}
 		else
 		{
-			MusicPlayer->MusicPause();
+			AudioPlayer->MusicPause();
 		}
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case BUTTON_NEXTSONG_ID:
 		obj.GetNextSongName(szFileName);
-		MusicPlayer->NewMusicPlay(szFileName);
+		AudioPlayer->NewMusicPlay(szFileName);
 		obj.SetNextIndex();
 		obj.InvalidateRectTotalTime();
-		obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case BUTTON_FF_ID:
-		MusicPlayer->Seek(5);
+		AudioPlayer->Seek(5);
 		break;
 	case BUTTON_REW_ID:
-		MusicPlayer->Seek(-5);
+		AudioPlayer->Seek(-5);
 		break;
 	case BUTTON_STOP_ID:
-		MusicPlayer->MusicStop();
-		obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+		AudioPlayer->MusicStop();
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -492,16 +484,16 @@ LRESULT ListBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	int wmEvent = HIWORD(wParam);
-	CViewerProcessor obj(hInst, hWnd, NULL, NULL, NULL);
+	CPlayerView obj(hInst, hWnd);
 	TCHAR szFileName[MAX_LOADSTRING + 1];
 
 	switch (wmEvent)
 	{
 	case LBN_DBLCLK:
 		obj.GetCurrentSelectListName(szFileName);
-		MusicPlayer->NewMusicPlay(szFileName);
+		AudioPlayer->NewMusicPlay(szFileName);
 		obj.InvalidateRectTotalTime();
-		obj.InitScrollTime(MusicPlayer->GetTotalMilliSecond());
+		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		obj.ShowPlayOrPause(true);
 		break;
 	default:
@@ -552,18 +544,18 @@ int GetMouseDeltaPerLine()
 ******************************************************************************/
 void CALLBACK TimerProc(HWND hWnd, UINT message, UINT iTimerID, DWORD dwTime)
 {
-	CViewerProcessor obj(hInst, hWnd, NULL, NULL, NULL);
-	if (MusicPlayer->GetPlayStatus()->bPlay)
+	CPlayerView obj(hInst, hWnd);
+	if (AudioPlayer->GetPlayStatus()->bPlay)
 	{
-		if (!MusicPlayer->GetStatus())
+		if (!AudioPlayer->GetStatus())
 		{
-			MusicPlayer->MusicStop();
-			obj.ShowPlayOrPause(MusicPlayer->GetPlayStatus()->bPlay);
+			AudioPlayer->MusicStop();
+			obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		}
 
-		MusicPlayer->SetMusicCurrentTime();
-		InvalidateRect(hWnd, &rectCurrent, TRUE);
-		obj.UpdateScrollTime(MusicPlayer->GetCurrentMilliSecond());
+		AudioPlayer->SetMusicCurrentTime();
+		obj.InvalidateRectCurrentTime();
+		obj.UpdateScrollTime(AudioPlayer->GetCurrentMilliSecond());
 	}
 	return ;
 }

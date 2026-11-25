@@ -15,54 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="app\MusicPlayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
+    <ClInclude Include="audio\AudioPlayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="common\Common.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MusicPlayer.h">
+    <ClInclude Include="common\stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="common\targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\third_party\libzplay\libzplay.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CMusicProcessor.h">
+    <ClInclude Include="res\resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CViewerProcessor.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CFilesProcessor.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="ui\PlayerView.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="app\MusicPlayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MusicPlayer.cpp">
+    <ClCompile Include="audio\AudioPlayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CMusicProcessor.cpp">
+    <ClCompile Include="common\Common.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CViewerProcessor.cpp">
+    <ClCompile Include="common\stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CFilesProcessor.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Common.cpp">
+    <ClCompile Include="ui\PlayerView.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -72,10 +63,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\small.ico">
+    <Image Include="res\MusicPlayer.ico">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="res\MusicPlayer.ico">
+    <Image Include="res\small.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

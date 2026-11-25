@@ -9,12 +9,11 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(MusicPlayer WIN32
-  src/CFilesProcessor.cpp
-  src/CMusicProcessor.cpp
-  src/Common.cpp
-  src/CViewerProcessor.cpp
-  src/MusicPlayer.cpp
-  src/stdafx.cpp
+  src/app/MusicPlayer.cpp
+  src/audio/AudioPlayer.cpp
+  src/common/Common.cpp
+  src/common/stdafx.cpp
+  src/ui/PlayerView.cpp
 )
 
 target_compile_definitions(MusicPlayer PRIVATE
@@ -25,7 +24,10 @@ target_compile_definitions(MusicPlayer PRIVATE
 )
 
 target_include_directories(MusicPlayer PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/app
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/audio
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/common
   ${CMAKE_CURRENT_SOURCE_DIR}/src/res
   ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libzplay
 )
@@ -63,12 +65,12 @@ else()
   add_custom_command(
     OUTPUT ${RC_OBJECT}
     COMMAND ${ZIG_EXECUTABLE} rc /c 65001 /y
-            /I ${CMAKE_CURRENT_SOURCE_DIR}/src
             /I ${CMAKE_CURRENT_SOURCE_DIR}/src/res
+            /I ${CMAKE_CURRENT_SOURCE_DIR}/src/common
             /fo ${RC_OBJECT} ${RC_UTF8}
     DEPENDS ${RC_UTF8}
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/resource.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/targetver.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/res/resource.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/common/targetver.h
             ${CMAKE_CURRENT_SOURCE_DIR}/src/res/MusicPlayer.ico
             ${CMAKE_CURRENT_SOURCE_DIR}/src/res/small.ico
     VERBATIM

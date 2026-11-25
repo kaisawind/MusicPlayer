@@ -48,7 +48,7 @@ void ConvertIntToTCHAR(unsigned int uiNum, TCHAR szNumber[])
 			lstrcat(szNumber, L"6");
 			break;
 		case 7:
-			lstrcat(szNumber, L"1");
+			lstrcat(szNumber, L"7");
 			break;
 		case 8:
 			lstrcat(szNumber, L"8");

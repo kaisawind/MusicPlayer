@@ -10,6 +10,7 @@
 #include <tchar.h>
 #include <windows.h>
 
+#define MAX_LOADSTRING 100
 #define MAX_STRING (1000)
 
 void ConvertIntToTCHAR(unsigned int , TCHAR[]);

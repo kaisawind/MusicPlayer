@@ -3,17 +3,15 @@
 * @summary	:	MusicPlayer的主头文件
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 13:26:03
-* @history	:	
+* @history	:
 ********************************************************************************/
 #ifndef __MUSICPLAYER_H__
 #define __MUSICPLAYER_H__
 #include "resource.h"
-#include "CMusicProcessor.h"
-#include "CViewerProcessor.h"
-#include "CFilesProcessor.h"
+#include "AudioPlayer.h"
+#include "PlayerView.h"
 
-#define MusicPlayer CMusicProcessor::getInstance()
-#define FilesProc CFilesProcessor::getInstance()
+#define AudioPlayer CAudioPlayer::getInstance()
 #define USER_MOUSEHWHEEL	(0x020A)
 
 enum enum_Timer_em
@@ -33,20 +31,11 @@ enum enum_Timer_em
 								WS_SYSMENU			| \
 								WS_MINIMIZEBOX)
 
-// 全局变量:
-HINSTANCE hInst;												// 当前实例
-TCHAR szTitle[MAX_LOADSTRING];									// 标题栏文本
-TCHAR szWindowClass[MAX_LOADSTRING];							// 主窗口类名
-
-const int ixClient = 800;										// 客户区宽度
-const int iyClient = 600;										// 客户区高度
-
 // 此代码模块中包含的函数的前向声明:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
-int CDECL MessageBoxPrintf(TCHAR* szCaption, TCHAR* szFormate, ...);
 LRESULT MenuProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT ButtonProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT ListBoxProc(HWND, UINT, WPARAM, LPARAM);
