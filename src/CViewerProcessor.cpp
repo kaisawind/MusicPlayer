@@ -7,6 +7,7 @@
 ********************************************************************************/
 #include "stdafx.h"
 #include "CViewerProcessor.h"
+#include <algorithm>
 
 /*****************************************************************************
 * @func		:	CViewerProcessor
@@ -616,7 +617,7 @@ void CViewerProcessor::InitScrollList()
 	int iyChar = tm.tmHeight;
 	int iMax = GetSongsCount() - (rect.bottom - rect.top) / iyChar;
 
-	iMax = max(0, iMax);
+	iMax = std::max(0, iMax);
 
 	SetScrollRange(hwndScrollList, SB_CTL, 0, iMax, FALSE);
 	SetScrollPos(hwndScrollList, SB_CTL, GetListTopIndex(), TRUE);
@@ -852,7 +853,7 @@ int CViewerProcessor::GetPreviousSongName(TCHAR* szPreSongName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
 	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	int iPreSongIndex = max(0, (iCurIndex - 1));
+	int iPreSongIndex = std::max(0, (iCurIndex - 1));
 	int iLength = SendMessage(hwndListTable, LB_GETTEXT, iPreSongIndex, (LPARAM)szPreSongName);
 	return iLength;
 }
@@ -871,7 +872,7 @@ int CViewerProcessor::GetNextSongName(TCHAR* szNextName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
 	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	int iNextSongIndex = min(GetSongsCount(), (iCurIndex + 1));
+	int iNextSongIndex = std::min(GetSongsCount(), (iCurIndex + 1));
 	int iLength = SendMessage(hwndListTable, LB_GETTEXT, iNextSongIndex, (LPARAM)szNextName);
 	return iLength;
 }
