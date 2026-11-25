@@ -24,13 +24,13 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MusicPlayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="libzplay.h">
+    <ClInclude Include="..\third_party\libzplay\libzplay.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="CMusicProcessor.h">
@@ -67,15 +67,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MusicPlayer.rc">
+    <ResourceCompile Include="res\MusicPlayer.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
+    <Image Include="res\small.ico">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="MusicPlayer.ico">
+    <Image Include="res\MusicPlayer.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

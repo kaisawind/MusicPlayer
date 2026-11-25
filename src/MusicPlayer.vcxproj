@@ -53,11 +53,16 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <BrowseInformation>true</BrowseInformation>
+      <AdditionalIncludeDirectories>..\third_party\libzplay;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\third_party\libzplay;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)res;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
@@ -71,13 +76,18 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\third_party\libzplay;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\third_party\libzplay;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)res;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -87,9 +97,9 @@
     <ClInclude Include="CMusicProcessor.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="CViewerProcessor.h" />
-    <ClInclude Include="libzplay.h" />
+    <ClInclude Include="..\third_party\libzplay\libzplay.h" />
     <ClInclude Include="MusicPlayer.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -107,11 +117,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MusicPlayer.rc" />
+    <ResourceCompile Include="res\MusicPlayer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="MusicPlayer.ico" />
-    <Image Include="small.ico" />
+    <Image Include="res\MusicPlayer.ico" />
+    <Image Include="res\small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

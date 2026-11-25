@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MusicPlayer", "MusicPlayer\MusicPlayer.vcxproj", "{B876F6A5-3B7E-445B-89EF-320C8EA2951E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MusicPlayer", "src\MusicPlayer.vcxproj", "{B876F6A5-3B7E-445B-89EF-320C8EA2951E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
