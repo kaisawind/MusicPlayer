@@ -839,8 +839,8 @@ void CPlayerView::InvalidateRectTotalTime()
 
 /*****************************************************************************
 * @func		:	InitScrollTime
-* @summary	:	初始化时间滚动条
-* @in		:	void
+* @summary	:	初始化时间滚动条（范围按秒设置）
+* @in		:	int iTotalTime : 总时长（毫秒）
 * @out		:	none
 * @return	:	void
 * @author	:	Li Jiachun
@@ -850,8 +850,9 @@ void CPlayerView::InvalidateRectTotalTime()
 void CPlayerView::InitScrollTime(int iTotalTime)
 {
 	HWND hwndScrollTime = GetDlgItem(m_hWnd, SCROLL_TIME_ID);
+	int iTotalSeconds = iTotalTime / 1000;
 
-	SetScrollRange(hwndScrollTime, SB_CTL, 0, iTotalTime, FALSE);
+	SetScrollRange(hwndScrollTime, SB_CTL, 0, iTotalSeconds, FALSE);
 	SetScrollPos(hwndScrollTime, SB_CTL, 0, TRUE);
 	return ;
 }
@@ -1023,10 +1024,10 @@ void CPlayerView::UpdateScrollVolume(unsigned int& iVolume, WPARAM wParam, LPARA
 	return ;
 }
 
-// 更新进度条位置（毫秒）。
+// 更新进度条位置；参数是毫秒，滚动条按秒显示。
 void CPlayerView::UpdateScrollTime(unsigned int iTime)
 {
 	HWND hwndScrollTime = GetDlgItem(m_hWnd, SCROLL_TIME_ID);
-	SetScrollPos(hwndScrollTime, SB_CTL, iTime, TRUE);
+	SetScrollPos(hwndScrollTime, SB_CTL, (int)(iTime / 1000), TRUE);
 	return ;
 }

@@ -67,6 +67,7 @@ public:
 	tagFileStatus_t* GetFileStatus();
 	int GetStatus();
 	void Seek(int );
+	void SeekToMilliSecond(unsigned int);
 	void SetPlayerVolume(int );
 	unsigned int GetTotalMilliSecond();
 	unsigned int GetCurrentMilliSecond();

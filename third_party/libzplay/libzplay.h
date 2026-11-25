@@ -1,7 +1,7 @@
 /*
  *  libzplay - windows ( WIN32 ) multimedia library
  *
- *  ver: 2.00
+ *  ver: 2.02
  *  date: 22. April, 2010.
  *
  *  Copyright (C) 2003-2010 Zoran Cindori

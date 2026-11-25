@@ -217,7 +217,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		AudioPlayer->SetPlayerVolume(iVolume);
 		break;
 	case WM_HSCROLL:
+	{
+		// 拖动/点击进度条时跳转到对应秒数
+		HWND hwndScrollTime = GetDlgItem(hWnd, SCROLL_TIME_ID);
+		if ((NULL != hwndScrollTime) && (hwndScrollTime == (HWND)lParam))
+		{
+			int iSeconds = GetScrollPos(hwndScrollTime, SB_CTL);
+			if ((SB_THUMBTRACK == LOWORD(wParam)) || (SB_THUMBPOSITION == LOWORD(wParam)))
+			{
+				iSeconds = (int)HIWORD(wParam);
+			}
+			AudioPlayer->SeekToMilliSecond((unsigned int)iSeconds * 1000);
+			AudioPlayer->SetMusicCurrentTime();
+			obj.InvalidateRectCurrentTime();
+		}
 		break;
+	}
 	case WM_SETFOCUS:
 		// TODO: 在此添加设置焦点的代码...
 		//hwndChild = GetDlgItem(hWnd, SCROLL_LIST_ID);
@@ -653,7 +668,7 @@ int GetMouseDeltaPerLine()
 
 /*****************************************************************************
 * @func		:	TimerProc
-* @summary	:	时间处理的回调函数，每秒处理一次
+* @summary	:	每秒更新进度；播放结束时自动切换下一曲
 * @in		:	HWND hWnd : 窗口句柄
 *			:	UINT message : 消息
 *			:	WPARAM wParam : wParam
@@ -672,12 +687,27 @@ void CALLBACK TimerProc(HWND hWnd, UINT message, UINT iTimerID, DWORD dwTime)
 		if (!AudioPlayer->GetStatus())
 		{
 			AudioPlayer->MusicStop();
+
+			// 自动播放下一曲；已经是最后一曲时保持停止
+			TCHAR szNext[MAX_PATH] = L"";
+			if ((LB_ERR != obj.GetNextSongName(szNext, MAX_PATH)) &&
+				(0 != lstrcmp(szNext, AudioPlayer->GetFileStatus()->szFileName)) &&
+				PlayFile(hWnd, szNext))
+			{
+				obj.SetNextIndex();
+				obj.InvalidateRectTotalTime();
+				obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+			}
+
 			obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		}
 
-		AudioPlayer->SetMusicCurrentTime();
-		obj.InvalidateRectCurrentTime();
-		obj.UpdateScrollTime(AudioPlayer->GetCurrentMilliSecond());
+		if (AudioPlayer->GetPlayStatus()->bPlay)
+		{
+			AudioPlayer->SetMusicCurrentTime();
+			obj.InvalidateRectCurrentTime();
+			obj.UpdateScrollTime(AudioPlayer->GetCurrentMilliSecond());
+		}
 	}
 	return ;
 }

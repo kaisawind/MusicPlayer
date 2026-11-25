@@ -280,7 +280,7 @@ int CAudioPlayer::MusicClose()
 
 /*****************************************************
 *	@func	:	NewMusicPlay
-*	@summary:	打开并播放新文件；格式不支持时保留当前文件
+*	@summary:	打开并播放新文件；失败时尝试恢复当前文件和位置
 *	@in		:	const TCHAR* szFileName	: 要播放的歌曲的名字
 *	@out	:	none
 *	@return	:	TRUE : ALL OK
@@ -302,15 +302,33 @@ int CAudioPlayer::NewMusicPlay(const TCHAR* szFileName)
 		return FALSE;
 	}
 
-	int iRet = FALSE;
+	// 保存当前文件和位置；新文件打开/播放失败时恢复
+	TCHAR szOldFile[MAX_PATH] = L"";
+	lstrcpynW(szOldFile, FileStatus.szFileName, MAX_PATH);
+	bool bOldOpen = PlayStatus.bFileOpen;
+	bool bOldPlay = PlayStatus.bPlay;
+	unsigned int uiOldPosition = bOldOpen ? GetCurrentMilliSecond() : 0;
+
 	if (MusicClose()			&&
 		OpenFile(szFileName)	&&
 		MusicPlay())
 	{
-		iRet = TRUE;
+		return TRUE;
 	}
 
-	return iRet;
+	if (bOldOpen && (TEXT('\0') != szOldFile[0]))
+	{
+		if (MusicClose() && OpenFile(szOldFile))
+		{
+			SeekToMilliSecond(uiOldPosition);
+			if (bOldPlay)
+			{
+				MusicPlay();
+			}
+		}
+	}
+
+	return FALSE;
 }
 
 /*****************************************************
@@ -419,6 +437,20 @@ void CAudioPlayer::Seek(int iTime)
 		pTime.sec = -iTime;
 		player->Seek(tfSecond, &pTime, smFromCurrentBackward);
 	}
+}
+
+// 跳转到指定毫秒位置。
+void CAudioPlayer::SeekToMilliSecond(unsigned int iMilliSecond)
+{
+	if ((NULL == player) || (false == PlayStatus.bFileOpen))
+	{
+		return ;
+	}
+
+	TStreamTime pTime;
+	pTime.ms = iMilliSecond;
+	player->Seek(tfMillisecond, &pTime, smFromBeginning);
+	return ;
 }
 
 void CAudioPlayer::SetPlayerVolume(int iVolume)

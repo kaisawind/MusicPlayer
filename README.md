@@ -6,6 +6,7 @@
 使用Win32 API编程
 
 详细设计见 [docs/设计文档.md](docs/设计文档.md)。
+音频库使用 libzplay 2.02（32 位），版本和校验值见 `third_party/libzplay/README.md`。
 
 ## 2. 源代码目录结构
 
@@ -21,6 +22,7 @@ docs/
     ui-layout.png
 third_party/
   libzplay/
+    README.md
     libzplay.dll
     libzplay.h
     libzplay.lib
