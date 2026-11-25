@@ -25,11 +25,15 @@ enum enum_Timer_em
 * WS_CAPTION : 标题框
 * WS_SYSMENU : 标题条上带有窗口菜单
 * WS_MINIMIZEBOX : 允许最小化
+* WS_MAXIMIZEBOX : 允许最大化
+* WS_THICKFRAME : 允许拖动边框调整大小
 ********************************************************************************/
 #define USER_MUSICPLAYERWINDOW (WS_OVERLAPPED		| \
 								WS_CAPTION			| \
 								WS_SYSMENU			| \
-								WS_MINIMIZEBOX)
+								WS_MINIMIZEBOX		| \
+								WS_MAXIMIZEBOX		| \
+								WS_THICKFRAME)
 
 // 此代码模块中包含的函数的前向声明:
 ATOM				MyRegisterClass(HINSTANCE hInstance);

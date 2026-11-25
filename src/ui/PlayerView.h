@@ -35,6 +35,7 @@ public:
 	void InitListTable();
 	int SelectListName(const TCHAR*);
 	int InitWindows();
+	void LayoutControls();
 	int GetSongsCount();
 	int GetListTopIndex();
 	void SetListTopIndex(int);
@@ -75,5 +76,8 @@ private:
 private:
 	HINSTANCE m_hInst;
 	HWND m_hWnd;
+	RECT m_rectBegin;
+	RECT m_rectEnd;
+	RECT m_rectCurrent;
 };
 #endif // __CPLAYERVIEW_H__

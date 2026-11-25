@@ -106,6 +106,12 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
+	// 优先使用 Per-Monitor V2；旧系统回退到 System DPI Aware
+	if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+	{
+		SetProcessDPIAware();
+	}
+
 	MSG msg;
 	HACCEL hAccelTable;
 
@@ -187,13 +193,22 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    SetWorkingDirectoryToExe();
    LoadLastDirectory();
 
+   // 初始客户区按系统 DPI 缩放到 800x600
+   UINT uiDpi = GetDpiForSystem();
+   if (0 == uiDpi)
+   {
+      uiDpi = 96;
+   }
+   RECT rcWindow = {0, 0, MulDiv(800, (int)uiDpi, 96), MulDiv(600, (int)uiDpi, 96)};
+   AdjustWindowRectEx(&rcWindow, USER_MUSICPLAYERWINDOW, TRUE, 0);
+
    hWnd = CreateWindow(szWindowClass, 		// 主窗口类名
 	   szTitle, 							// 标题栏文本
 	   USER_MUSICPLAYERWINDOW, 				// 窗口样式
 	   CW_USEDEFAULT, 						// x
 	   CW_USEDEFAULT, 						// y
-	   800,									// 宽
-	   600, 								// 高
+	   rcWindow.right - rcWindow.left,		// 宽
+	   rcWindow.bottom - rcWindow.top,		// 高
 	   NULL, 								// 父窗口
 	   NULL, 								// 菜单
 	   hInstance, 							// 实例句柄
@@ -216,6 +231,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 * @message	:	WM_CREATE	- 窗口创建
 *			:	WM_COMMAND	- 处理应用程序菜单
 *			:	WM_PAINT	- 绘制主窗口
+*			:	WM_SIZE/WM_DPICHANGED - 重新布局
 *			:	WM_DESTROY	- 发送退出消息并返回
 * @in		:	HWND hwnd : 窗口句柄
 *			:	UINT iMessage : 消息
@@ -266,7 +282,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	case WM_SIZE:
+		// 客户区大小变化时重新布局
+		if (SIZE_MINIMIZED != wParam)
+		{
+			obj.LayoutControls();
+		}
 		break;
+	case WM_GETMINMAXINFO:
+	{
+		// 限制最小窗口，避免控件重叠
+		MINMAXINFO* pMinMax = (MINMAXINFO*)lParam;
+		UINT uiDpi = GetDpiForWindow(hWnd);
+		if (0 == uiDpi)
+		{
+			uiDpi = 96;
+		}
+		pMinMax->ptMinTrackSize.x = MulDiv(640, (int)uiDpi, 96);
+		pMinMax->ptMinTrackSize.y = MulDiv(480, (int)uiDpi, 96);
+		return 0;
+	}
+	case WM_DPICHANGED:
+	{
+		// 移动到不同 DPI 的显示器时按建议矩形调整
+		RECT* pRect = (RECT*)lParam;
+		SetWindowPos(hWnd, NULL, pRect->left, pRect->top,
+			pRect->right - pRect->left, pRect->bottom - pRect->top,
+			SWP_NOZORDER | SWP_NOACTIVATE);
+		obj.LayoutControls();
+		return 0;
+	}
 	case WM_VSCROLL:
 		// 垂直滚动条部品更新
 		obj.UpdateScrollList(wParam, lParam);

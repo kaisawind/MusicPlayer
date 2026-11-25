@@ -24,11 +24,12 @@ const TCHAR szStopTitle[] = TEXT("停止");
 const TCHAR szUPTitle[] = TEXT("上一曲");
 const TCHAR szDOWNTitle[] = TEXT("下一曲");
 
-const RECT rectBegin = {110, 410, 190, 430};
-const RECT rectEnd = {610, 410, 690, 430};
-const RECT rectCurrent = {360, 410, 440, 430};
+// 不使用整行高度，保证列表高度等于布局计算值。
+const DWORD LBS_USER = LBS_NOTIFY | LBS_SORT | WS_BORDER | LBS_NOINTEGRALHEIGHT;
 
-const DWORD LBS_USER = LBS_NOTIFY | LBS_SORT | WS_BORDER;
+// 按 DPI 创建并复用的 UI 字体。
+HFONT g_hUiFont = NULL;
+UINT g_uiFontDpi = 0;
 
 // 安全读取列表文本：先查长度，失败或超出缓冲区返回 LB_ERR。
 int GetListText(HWND hwndList, int iIndex, TCHAR* szText, int cchText)
@@ -59,6 +60,9 @@ CPlayerView::CPlayerView(HINSTANCE hInst, HWND hWnd)
 {
 	this->m_hInst = hInst;
 	this->m_hWnd = hWnd;
+	SetRectEmpty(&m_rectBegin);
+	SetRectEmpty(&m_rectEnd);
+	SetRectEmpty(&m_rectCurrent);
 }
 
 /*****************************************************************************
@@ -496,6 +500,157 @@ int CPlayerView::SelectListName(const TCHAR* szName)
 }
 
 /*****************************************************************************
+* @func		:	LayoutControls
+* @summary	:	按客户区大小和 DPI 重新排列所有子控件
+* @in		:	void
+* @out		:	none
+* @return	:	void
+******************************************************************************/
+void CPlayerView::LayoutControls()
+{
+	RECT rcClient;
+	if (!GetClientRect(m_hWnd, &rcClient))
+	{
+		return ;
+	}
+
+	int iWidth = rcClient.right - rcClient.left;
+	int iHeight = rcClient.bottom - rcClient.top;
+	UINT uiDpi = GetDpiForWindow(m_hWnd);
+	if (0 == uiDpi)
+	{
+		uiDpi = 96;
+	}
+
+	auto S = [uiDpi](int iValue) { return MulDiv(iValue, (int)uiDpi, 96); };
+
+	const int iMargin = S(60);
+	const int iScrollWidth = S(40);
+	const int iScrollGap = S(20);
+	const int iListGap = S(30);
+	const int iTop = S(10);
+	const int iPathHeight = S(20);
+	const int iListY = S(30);
+	const int iTimeGap = S(20);
+	const int iTimeHeight = S(10);
+	const int iTextGap = S(10);
+	const int iTextHeight = S(20);
+	const int iRowGap = S(20);
+	const int iButtonHeight = S(30);
+	const int iRow2Gap = S(30);
+	const int iBottom = S(60);
+	const int iButtonWidth = S(100);
+	const int iLabelWidth = S(80);
+	const int iLeftInset = S(30);
+	const int iRightInset = S(20);
+
+	int iListX = iMargin + iScrollWidth + iScrollGap;
+	int iVolumeX = iWidth - iMargin - iScrollWidth;
+	int iListWidth = iVolumeX - iListGap - iListX;
+	int iListHeight = iHeight - iListY -
+		(iTimeGap + iTimeHeight + iTextGap + iTextHeight +
+		 iRowGap + iButtonHeight + iRow2Gap + iButtonHeight + iBottom);
+
+	if (iListWidth < S(100))
+	{
+		iListWidth = S(100);
+	}
+	if (iListHeight < S(80))
+	{
+		iListHeight = S(80);
+	}
+
+	int iTimeX = iListX - S(10);
+	int iTimeWidth = iListWidth + S(20);
+	int iTimeY = iListY + iListHeight + iTimeGap;
+	int iTextY = iTimeY + iTimeHeight + iTextGap;
+	int iRow1Y = iTextY + iTextHeight + iRowGap;
+	int iRow2Y = iRow1Y + iButtonHeight + iRow2Gap;
+
+	int iBeginX = iTimeX;
+	int iCurrentX = (iWidth - iLabelWidth) / 2;
+	int iEndX = iVolumeX - iLabelWidth - S(10);
+
+	SetRect(&m_rectBegin, iBeginX, iTextY, iBeginX + iLabelWidth, iTextY + iTextHeight);
+	SetRect(&m_rectCurrent, iCurrentX, iTextY, iCurrentX + iLabelWidth, iTextY + iTextHeight);
+	SetRect(&m_rectEnd, iEndX, iTextY, iEndX + iLabelWidth, iTextY + iTextHeight);
+
+	int iGroupWidth = iListWidth - iLeftInset - iRightInset;
+	int iButtonGap = (iGroupWidth - 3 * iButtonWidth) / 2;
+	if (iButtonGap < S(10))
+	{
+		iButtonGap = S(10);
+	}
+	int iButton1X = iListX + iLeftInset;
+	int iButton2X = iButton1X + iButtonWidth + iButtonGap;
+	int iButton3X = iButton2X + iButtonWidth + iButtonGap;
+
+	MoveWindow(GetDlgItem(m_hWnd, STATIC_LISTPATH_ID), iListX, iTop, iListWidth, iPathHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, LIST_TABLE_ID), iListX, iListY, iListWidth, iListHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, SCROLL_LIST_ID), iMargin, iListY, iScrollWidth, iListHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, SCROLL_VOLUME_ID), iVolumeX, iListY, iScrollWidth, iListHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, SCROLL_TIME_ID), iTimeX, iTimeY, iTimeWidth, iTimeHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, BUTTON_PRESONG_ID), iButton1X, iRow1Y, iButtonWidth, iButtonHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, BUTTON_PLAYPAUSE_ID), iButton2X, iRow1Y, iButtonWidth, iButtonHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, BUTTON_NEXTSONG_ID), iButton3X, iRow1Y, iButtonWidth, iButtonHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, BUTTON_REW_ID), iButton1X, iRow2Y, iButtonWidth, iButtonHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, BUTTON_STOP_ID), iButton2X, iRow2Y, iButtonWidth, iButtonHeight, TRUE);
+	MoveWindow(GetDlgItem(m_hWnd, BUTTON_FF_ID), iButton3X, iRow2Y, iButtonWidth, iButtonHeight, TRUE);
+
+	// 字体变化时重建，并应用到所有子控件。
+	HFONT hOldFont = NULL;
+	if (g_uiFontDpi != uiDpi)
+	{
+		NONCLIENTMETRICS ncm = {0};
+		ncm.cbSize = sizeof(ncm);
+		HFONT hNewFont = NULL;
+		if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0))
+		{
+			ncm.lfMessageFont.lfHeight = -MulDiv(9, (int)uiDpi, 72);
+			hNewFont = CreateFontIndirect(&ncm.lfMessageFont);
+		}
+		if (NULL == hNewFont)
+		{
+			hNewFont = CreateFontW(-MulDiv(9, (int)uiDpi, 72), 0, 0, 0, FW_NORMAL,
+				FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+				CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+				TEXT("Microsoft YaHei UI"));
+		}
+		if (NULL != hNewFont)
+		{
+			hOldFont = g_hUiFont;
+			g_hUiFont = hNewFont;
+			g_uiFontDpi = uiDpi;
+		}
+	}
+
+	if (NULL != g_hUiFont)
+	{
+		const int aiControlIds[] = {
+			STATIC_LISTPATH_ID, LIST_TABLE_ID, SCROLL_LIST_ID, SCROLL_VOLUME_ID,
+			SCROLL_TIME_ID, BUTTON_PRESONG_ID, BUTTON_PLAYPAUSE_ID,
+			BUTTON_NEXTSONG_ID, BUTTON_REW_ID, BUTTON_STOP_ID, BUTTON_FF_ID
+		};
+		for (int i = 0; i < (int)(sizeof(aiControlIds) / sizeof(aiControlIds[0])); ++i)
+		{
+			HWND hwndControl = GetDlgItem(m_hWnd, aiControlIds[i]);
+			if (NULL != hwndControl)
+			{
+				SendMessage(hwndControl, WM_SETFONT, (WPARAM)g_hUiFont, TRUE);
+			}
+		}
+	}
+
+	if (NULL != hOldFont)
+	{
+		DeleteObject(hOldFont);
+	}
+
+	InitScrollList();
+	return ;
+}
+
+/*****************************************************************************
 * @func		:	InitWindows
 * @summary	:	窗口初始化。
 * @in		:	void
@@ -520,6 +675,7 @@ int CPlayerView::InitWindows()
 		CreateScrollVolume()	&&
 		CreateListPath())
 	{
+		LayoutControls();
 		return TRUE;
 	}
 
@@ -593,8 +749,14 @@ void CPlayerView::InitScrollList()
 {
 	TEXTMETRIC tm;
 	RECT rect;
+	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
 	HWND hwndScrollList = GetDlgItem(m_hWnd, SCROLL_LIST_ID);
-	HDC hdc = GetDC(hwndScrollList);
+	if ((NULL == hwndListTable) || (NULL == hwndScrollList))
+	{
+		return ;
+	}
+
+	HDC hdc = GetDC(hwndListTable);
 	if (NULL == hdc)
 	{
 		return ;
@@ -602,7 +764,7 @@ void CPlayerView::InitScrollList()
 
 	if (!GetWindowRect(hwndScrollList, &rect) || !GetTextMetrics(hdc, &tm) || (0 == tm.tmHeight))
 	{
-		ReleaseDC(hwndScrollList, hdc);
+		ReleaseDC(hwndListTable, hdc);
 		return ;
 	}
 
@@ -613,7 +775,7 @@ void CPlayerView::InitScrollList()
 
 	SetScrollRange(hwndScrollList, SB_CTL, 0, iMax, FALSE);
 	SetScrollPos(hwndScrollList, SB_CTL, GetListTopIndex(), TRUE);
-	ReleaseDC(hwndScrollList, hdc);
+	ReleaseDC(hwndListTable, hdc);
 	return ;
 }
 
@@ -780,7 +942,16 @@ void CPlayerView::UpdateRectBeginTime(HDC hdc, const TCHAR szBeginTime[])
 		return ;
 	}
 
-	TextOut(hdc, rectBegin.left, rectBegin.top, szBeginTime, lstrlen(szBeginTime));
+	HGDIOBJ hOldFont = NULL;
+	if (NULL != g_hUiFont)
+	{
+		hOldFont = SelectObject(hdc, g_hUiFont);
+	}
+	TextOut(hdc, m_rectBegin.left, m_rectBegin.top, szBeginTime, lstrlen(szBeginTime));
+	if (NULL != hOldFont)
+	{
+		SelectObject(hdc, hOldFont);
+	}
 	return ;
 }
 
@@ -802,7 +973,16 @@ void CPlayerView::UpdateRectTotalTime(HDC hdc, const TCHAR szTotalTime[])
 		return ;
 	}
 
-	TextOut(hdc, rectEnd.left, rectEnd.top, szTotalTime, lstrlen(szTotalTime));
+	HGDIOBJ hOldFont = NULL;
+	if (NULL != g_hUiFont)
+	{
+		hOldFont = SelectObject(hdc, g_hUiFont);
+	}
+	TextOut(hdc, m_rectEnd.left, m_rectEnd.top, szTotalTime, lstrlen(szTotalTime));
+	if (NULL != hOldFont)
+	{
+		SelectObject(hdc, hOldFont);
+	}
 	return ;
 }
 
@@ -824,7 +1004,16 @@ void CPlayerView::UpdateRectCurreTime(HDC hdc, const TCHAR szCurrentTime[])
 		return ;
 	}
 
-	TextOut(hdc, rectCurrent.left, rectCurrent.top, szCurrentTime, lstrlen(szCurrentTime));
+	HGDIOBJ hOldFont = NULL;
+	if (NULL != g_hUiFont)
+	{
+		hOldFont = SelectObject(hdc, g_hUiFont);
+	}
+	TextOut(hdc, m_rectCurrent.left, m_rectCurrent.top, szCurrentTime, lstrlen(szCurrentTime));
+	if (NULL != hOldFont)
+	{
+		SelectObject(hdc, hOldFont);
+	}
 	return ;
 }
 
@@ -840,7 +1029,7 @@ void CPlayerView::UpdateRectCurreTime(HDC hdc, const TCHAR szCurrentTime[])
 ******************************************************************************/
 void CPlayerView::InvalidateRectCurrentTime()
 {
-	InvalidateRect(m_hWnd, &rectCurrent, TRUE);
+	InvalidateRect(m_hWnd, &m_rectCurrent, TRUE);
 	return ;
 }
 
@@ -857,7 +1046,7 @@ void CPlayerView::InvalidateRectCurrentTime()
 void CPlayerView::InvalidateRectTotalTime()
 {
 	InvalidateRectCurrentTime();
-	InvalidateRect(m_hWnd, &rectEnd, TRUE);
+	InvalidateRect(m_hWnd, &m_rectEnd, TRUE);
 	return ;
 }
 
