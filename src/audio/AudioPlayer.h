@@ -47,7 +47,7 @@ struct tagPlayStatus_t
 struct tagFileStatus_t
 {
 	enumMusicFormat_em nformat;				// Music的编码格式
-	TCHAR szFileName[MAX_LOADSTRING + 1];	// 文件名
+	TCHAR szFileName[MAX_PATH];				// 文件名
 	TCHAR szTotalTime[MAX_LOADSTRING + 1];	// 歌曲播放总时间
 };
 

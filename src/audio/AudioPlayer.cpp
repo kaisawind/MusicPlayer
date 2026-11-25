@@ -49,7 +49,16 @@ CAudioPlayer::CAudioPlayer()
 	PlayStatus.bFileOpen = false;
 	PlayStatus.bPlay = false;
 	lstrcpyW(PlayStatus.szCurrentTime, TEXT("00:00:000"));
-	player->GetPlayerVolume(&(PlayStatus.iLeftVolume), &(PlayStatus.iRightVolume));
+
+	if (NULL != player)
+	{
+		player->GetPlayerVolume(&(PlayStatus.iLeftVolume), &(PlayStatus.iRightVolume));
+	}
+	else
+	{
+		PlayStatus.iLeftVolume = 0;
+		PlayStatus.iRightVolume = 0;
+	}
 }
 
 /*****************************************************
@@ -72,7 +81,7 @@ int CAudioPlayer::OpenFile(const TCHAR* szFileName)
 	}
 	int iRet = FALSE;
 
-	lstrcpyW(FileStatus.szFileName, szFileName);
+	lstrcpynW(FileStatus.szFileName, szFileName, MAX_PATH);
 	int nFormat = player->GetFileFormatW(szFileName);
 	if(nFormat == sfUnknown)
 	{
@@ -254,6 +263,11 @@ tagFileStatus_t* CAudioPlayer::GetFileStatus()
 ******************************************************/
 int CAudioPlayer::MusicClose()
 {
+	if (NULL == player)
+	{
+		return FALSE;
+	}
+
 	int iRet = FALSE;
 	iRet = player->Close();
 
@@ -301,21 +315,18 @@ int CAudioPlayer::NewMusicPlay(const TCHAR* szFileName)
 ******************************************************/
 void CAudioPlayer::SetMusicTotalTime()
 {
-	TCHAR szTimeMinute[MAX_LOADSTRING + 1] = L"";
-	TCHAR szTimeSecond[MAX_LOADSTRING + 1] =  L"";
-	TCHAR szTimeMilliSecond[MAX_LOADSTRING + 1] =  L"";
+	if (NULL == player)
+	{
+		return ;
+	}
+
 	TStreamInfo pInfo;
 	player->GetStreamInfo(&pInfo);
-
-	ConvertIntToTCHAR(pInfo.Length.hms.minute, szTimeMinute);
-	ConvertIntToTCHAR(pInfo.Length.hms.second, szTimeSecond);
-	ConvertIntToTCHAR(pInfo.Length.hms.millisecond, szTimeMilliSecond);
-
-	wsprintf(FileStatus.szTotalTime, 
-		TEXT("%02s:%02s:%03s"), 
-		szTimeMinute, 
-		szTimeSecond, 
-		szTimeMilliSecond);
+	wsprintf(FileStatus.szTotalTime,
+		TEXT("%02u:%02u:%03u"),
+		pInfo.Length.hms.minute,
+		pInfo.Length.hms.second,
+		pInfo.Length.hms.millisecond);
 	return ;
 }
 
@@ -331,21 +342,18 @@ void CAudioPlayer::SetMusicTotalTime()
 ******************************************************/
 void CAudioPlayer::SetMusicCurrentTime()
 {
-	TCHAR szTimeMinute[MAX_LOADSTRING + 1] = L"";
-	TCHAR szTimeSecond[MAX_LOADSTRING + 1] =  L"";
-	TCHAR szTimeMilliSecond[MAX_LOADSTRING + 1] =  L"";
+	if (NULL == player)
+	{
+		return ;
+	}
+
 	TStreamTime pInfo;
 	player->GetPosition(&pInfo);
-
-	ConvertIntToTCHAR(pInfo.hms.minute, szTimeMinute);
-	ConvertIntToTCHAR(pInfo.hms.second, szTimeSecond);
-	ConvertIntToTCHAR(pInfo.hms.millisecond, szTimeMilliSecond);
-
-	wsprintf(PlayStatus.szCurrentTime, 
-		TEXT("%02s:%02s:%03s"), 
-		szTimeMinute, 
-		szTimeSecond, 
-		szTimeMilliSecond);
+	wsprintf(PlayStatus.szCurrentTime,
+		TEXT("%02u:%02u:%03u"),
+		pInfo.hms.minute,
+		pInfo.hms.second,
+		pInfo.hms.millisecond);
 	return ;
 }
 
@@ -362,6 +370,11 @@ void CAudioPlayer::SetMusicCurrentTime()
 ******************************************************/
 int CAudioPlayer::GetStatus()
 {
+	if (NULL == player)
+	{
+		return FALSE;
+	}
+
 	TStreamStatus status;
 	player->GetStatus(&status);
 	return status.fPlay;
@@ -380,6 +393,11 @@ int CAudioPlayer::GetStatus()
 ******************************************************/
 void CAudioPlayer::Seek(int iTime)
 {
+	if ((NULL == player) || (false == PlayStatus.bFileOpen))
+	{
+		return ;
+	}
+
 	TStreamTime pTime;
 	if (0 <= iTime)
 	{
@@ -395,6 +413,20 @@ void CAudioPlayer::Seek(int iTime)
 
 void CAudioPlayer::SetPlayerVolume(int iVolume)
 {
+	if (NULL == player)
+	{
+		return ;
+	}
+
+	if (iVolume < 0)
+	{
+		iVolume = 0;
+	}
+	else if (iVolume > MAX_PLAYER_VOLUME)
+	{
+		iVolume = MAX_PLAYER_VOLUME;
+	}
+
 	player->SetPlayerVolume(iVolume, iVolume);
 	player->GetPlayerVolume(&(PlayStatus.iLeftVolume), &(PlayStatus.iRightVolume));
 	return ;
@@ -402,6 +434,11 @@ void CAudioPlayer::SetPlayerVolume(int iVolume)
 
 unsigned int CAudioPlayer::GetCurrentMilliSecond()
 {
+	if (NULL == player)
+	{
+		return 0;
+	}
+
 	TStreamTime pTime;
 	player->GetPosition(&pTime);
 	return pTime.ms;
@@ -409,6 +446,11 @@ unsigned int CAudioPlayer::GetCurrentMilliSecond()
 
 unsigned int CAudioPlayer::GetTotalMilliSecond()
 {
+	if (NULL == player)
+	{
+		return 0;
+	}
+
 	TStreamInfo pInfo;
 	player->GetStreamInfo(&pInfo);
 	return pInfo.Length.ms;

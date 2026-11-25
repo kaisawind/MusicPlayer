@@ -28,7 +28,28 @@ const RECT rectEnd = {610, 410, 690, 430};
 const RECT rectCurrent = {360, 410, 440, 430};
 
 const DWORD LBS_USER = LBS_NOTIFY | LBS_SORT | WS_BORDER;
-const int MAX_PLAYER_VOLUME = 100;
+
+int GetListText(HWND hwndList, int iIndex, TCHAR* szText, int cchText)
+{
+	if ((NULL == hwndList) || (NULL == szText) || (cchText <= 0))
+	{
+		return LB_ERR;
+	}
+
+	int iCount = (int)SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+	if ((iIndex < 0) || (iIndex >= iCount))
+	{
+		return LB_ERR;
+	}
+
+	int iLength = (int)SendMessage(hwndList, LB_GETTEXTLEN, iIndex, 0);
+	if ((LB_ERR == iLength) || (iLength >= cchText))
+	{
+		return LB_ERR;
+	}
+
+	return (int)SendMessage(hwndList, LB_GETTEXT, iIndex, (LPARAM)szText);
+}
 }
 
 CPlayerView::CPlayerView(HINSTANCE hInst, HWND hWnd)
@@ -452,8 +473,8 @@ void CPlayerView::InitListTable()
 	SetWindowText(hwndListPath, szBuffer);
 
 	HWND hwndChild = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	SendMessage(hwndChild, LB_DIR, DDL_READWRITE | DDL_DIRECTORY, (LPARAM)TEXT("*.MP3"));
-	SendMessage(hwndChild, LB_DIR, DDL_READWRITE | DDL_DIRECTORY, (LPARAM)TEXT("*.WAV"));
+	SendMessage(hwndChild, LB_DIR, DDL_READWRITE, (LPARAM)TEXT("*.MP3"));
+	SendMessage(hwndChild, LB_DIR, DDL_READWRITE, (LPARAM)TEXT("*.WAV"));
 	SendMessage(hwndChild, LB_SETCURSEL, 0, TRUE);
 
 	return ;
@@ -559,9 +580,17 @@ void CPlayerView::InitScrollList()
 	RECT rect;
 	HWND hwndScrollList = GetDlgItem(m_hWnd, SCROLL_LIST_ID);
 	HDC hdc = GetDC(hwndScrollList);
-	GetWindowRect(hwndScrollList, &rect);
-	GetTextMetrics(hdc, &tm);
-	int ixChar = tm.tmWeight;
+	if (NULL == hdc)
+	{
+		return ;
+	}
+
+	if (!GetWindowRect(hwndScrollList, &rect) || !GetTextMetrics(hdc, &tm) || (0 == tm.tmHeight))
+	{
+		ReleaseDC(hwndScrollList, hdc);
+		return ;
+	}
+
 	int iyChar = tm.tmHeight;
 	int iMax = GetSongsCount() - (rect.bottom - rect.top) / iyChar;
 
@@ -569,7 +598,7 @@ void CPlayerView::InitScrollList()
 
 	SetScrollRange(hwndScrollList, SB_CTL, 0, iMax, FALSE);
 	SetScrollPos(hwndScrollList, SB_CTL, GetListTopIndex(), TRUE);
-	ReleaseDC(m_hWnd, hdc);
+	ReleaseDC(hwndScrollList, hdc);
 	return ;
 }
 
@@ -591,13 +620,17 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 		return ;
 	}
 	static int iIndex = 0;
+	int iMin = 0;
+	int iMax = 0;
+	GetScrollRange((HWND)lParam, SB_CTL, &iMin, &iMax);
+
 	switch(LOWORD(wParam))
 	{
 	case SB_PAGEDOWN:
-		iIndex++;
+		iIndex += 10;
 		break;
 	case SB_PAGEUP:
-		iIndex--;
+		iIndex -= 10;
 		break;
 	case SB_LINEDOWN:
 		iIndex++;
@@ -606,10 +639,10 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 		iIndex--;
 		break;
 	case SB_TOP:
-		iIndex = 0;
+		iIndex = iMin;
 		break;
 	case SB_BOTTOM:
-		iIndex = GetSongsCount();
+		iIndex = iMax;
 		break;
 	case SB_THUMBTRACK:
 	case SB_THUMBPOSITION:
@@ -618,6 +651,16 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 	default:
 		break;
 	}
+
+	if (iIndex < iMin)
+	{
+		iIndex = iMin;
+	}
+	else if (iIndex > iMax)
+	{
+		iIndex = iMax;
+	}
+
 	SetScrollPos((HWND)lParam, SB_CTL, iIndex, TRUE);
 	SetListTopIndex(iIndex);
 	return ;
@@ -633,12 +676,11 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 * @time		:	2013-3-31 19:37:18
 * @history	:	
 ******************************************************************************/
-int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName)
+int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName, int cchCurrentSelectName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	int iLength = SendMessage(hwndListTable, LB_GETTEXT, iCurIndex, (LPARAM)szCurrentSelectName);
-	return iLength;
+	int iCurIndex = (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
+	return GetListText(hwndListTable, iCurIndex, szCurrentSelectName, cchCurrentSelectName);
 }
 
 /*****************************************************************************
@@ -652,7 +694,7 @@ int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName)
 * @time		:	2013-3-31 19:39:06
 * @history	:	
 ******************************************************************************/
-LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, bool bPageScroll, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (0 == iDeltaPerLine)
 	{
@@ -660,20 +702,22 @@ LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, UINT message, WP
 	}
 
 	HWND hwndScrollList = GetDlgItem(m_hWnd, SCROLL_LIST_ID);
+	WPARAM wUp = bPageScroll ? SB_PAGEUP : SB_LINEUP;
+	WPARAM wDown = bPageScroll ? SB_PAGEDOWN : SB_LINEDOWN;
 
 	int iAccumDelta = (short)HIWORD(wParam);
 
 	// 向下滚动鼠标
 	while (iAccumDelta >= iDeltaPerLine)
 	{
-		SendMessage(m_hWnd, WM_VSCROLL, SB_LINEUP, (LPARAM)hwndScrollList);
+		SendMessage(m_hWnd, WM_VSCROLL, wUp, (LPARAM)hwndScrollList);
 		iAccumDelta -= iDeltaPerLine;
 	}
 
 	// 向上滚动鼠标
 	while(iAccumDelta <= -iDeltaPerLine)
 	{
-		SendMessage(m_hWnd, WM_VSCROLL, SB_LINEDOWN, (LPARAM)hwndScrollList);
+		SendMessage(m_hWnd, WM_VSCROLL, wDown, (LPARAM)hwndScrollList);
 		iAccumDelta += iDeltaPerLine;
 	}
 	return NULL;
@@ -689,11 +733,14 @@ LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, UINT message, WP
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CPlayerView::UpdateRectBeginTime(const TCHAR szBeginTime[])
+void CPlayerView::UpdateRectBeginTime(HDC hdc, const TCHAR szBeginTime[])
 {
-	HDC hdc = GetDC(m_hWnd);
+	if (NULL == hdc)
+	{
+		return ;
+	}
+
 	TextOut(hdc, rectBegin.left, rectBegin.top, szBeginTime, lstrlen(szBeginTime));
-	ReleaseDC(m_hWnd, hdc);
 	return ;
 }
 
@@ -707,13 +754,14 @@ void CPlayerView::UpdateRectBeginTime(const TCHAR szBeginTime[])
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CPlayerView::UpdateRectTotalTime(const TCHAR szTotalTime[])
+void CPlayerView::UpdateRectTotalTime(HDC hdc, const TCHAR szTotalTime[])
 {
-	// 更新总时间时会把当前播放到的时间更新掉
-	//UpdateRectCurreTime(TEXT("00:00:000"));
-	HDC hdc = GetDC(m_hWnd);
+	if (NULL == hdc)
+	{
+		return ;
+	}
+
 	TextOut(hdc, rectEnd.left, rectEnd.top, szTotalTime, lstrlen(szTotalTime));
-	ReleaseDC(m_hWnd, hdc);
 	return ;
 }
 
@@ -727,11 +775,14 @@ void CPlayerView::UpdateRectTotalTime(const TCHAR szTotalTime[])
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-void CPlayerView::UpdateRectCurreTime(const TCHAR szCurrentTime[])
+void CPlayerView::UpdateRectCurreTime(HDC hdc, const TCHAR szCurrentTime[])
 {
-	HDC hdc = GetDC(m_hWnd);
+	if (NULL == hdc)
+	{
+		return ;
+	}
+
 	TextOut(hdc, rectCurrent.left, rectCurrent.top, szCurrentTime, lstrlen(szCurrentTime));
-	ReleaseDC(m_hWnd, hdc);
 	return ;
 }
 
@@ -797,13 +848,23 @@ void CPlayerView::InitScrollTime(int iTotalTime)
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-int CPlayerView::GetPreviousSongName(TCHAR* szPreSongName)
+int CPlayerView::GetPreviousSongName(TCHAR* szPreSongName, int cchPreSongName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
+	int iCount = (int)SendMessage(hwndListTable, LB_GETCOUNT, 0, 0);
+	if (iCount <= 0)
+	{
+		return LB_ERR;
+	}
+
+	int iCurIndex = (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
+	if (LB_ERR == iCurIndex)
+	{
+		iCurIndex = 0;
+	}
+
 	int iPreSongIndex = std::max(0, (iCurIndex - 1));
-	int iLength = SendMessage(hwndListTable, LB_GETTEXT, iPreSongIndex, (LPARAM)szPreSongName);
-	return iLength;
+	return GetListText(hwndListTable, iPreSongIndex, szPreSongName, cchPreSongName);
 }
 
 /*****************************************************************************
@@ -816,13 +877,18 @@ int CPlayerView::GetPreviousSongName(TCHAR* szPreSongName)
 * @time		:	2013-4-3 21:53:53
 * @history	:	
 ******************************************************************************/
-int CPlayerView::GetNextSongName(TCHAR* szNextName)
+int CPlayerView::GetNextSongName(TCHAR* szNextName, int cchNextName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	int iNextSongIndex = std::min(GetSongsCount(), (iCurIndex + 1));
-	int iLength = SendMessage(hwndListTable, LB_GETTEXT, iNextSongIndex, (LPARAM)szNextName);
-	return iLength;
+	int iCount = (int)SendMessage(hwndListTable, LB_GETCOUNT, 0, 0);
+	if (iCount <= 0)
+	{
+		return LB_ERR;
+	}
+
+	int iCurIndex = (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
+	int iNextSongIndex = std::min(iCount - 1, (iCurIndex + 1));
+	return GetListText(hwndListTable, iNextSongIndex, szNextName, cchNextName);
 }
 
 /*****************************************************************************
@@ -837,12 +903,21 @@ int CPlayerView::GetNextSongName(TCHAR* szNextName)
 ******************************************************************************/
 void CPlayerView::SetPreviousIndex()
 {
-	TCHAR szSelectName[MAX_LOADSTRING + 1] = L"";
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	iCurIndex--;
-	SendMessage(hwndListTable, LB_GETTEXT, iCurIndex, (LPARAM)szSelectName);
-	SendMessage(hwndListTable, LB_SELECTSTRING, iCurIndex, (LPARAM)szSelectName);
+	int iCount = (int)SendMessage(hwndListTable, LB_GETCOUNT, 0, 0);
+	if (iCount <= 0)
+	{
+		return ;
+	}
+
+	int iCurIndex = (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
+	if (LB_ERR == iCurIndex)
+	{
+		iCurIndex = 0;
+	}
+
+	int iIndex = std::max(0, (iCurIndex - 1));
+	SendMessage(hwndListTable, LB_SETCURSEL, iIndex, 0);
 	return ;
 }
 
@@ -858,17 +933,26 @@ void CPlayerView::SetPreviousIndex()
 ******************************************************************************/
 void CPlayerView::SetNextIndex()
 {
-	TCHAR szSelectName[MAX_LOADSTRING + 1] = L"";
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
-	int iCurIndex = SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	iCurIndex++;
-	SendMessage(hwndListTable, LB_GETTEXT, iCurIndex, (LPARAM)szSelectName);
-	SendMessage(hwndListTable, LB_SELECTSTRING, iCurIndex, (LPARAM)szSelectName);
+	int iCount = (int)SendMessage(hwndListTable, LB_GETCOUNT, 0, 0);
+	if (iCount <= 0)
+	{
+		return ;
+	}
+
+	int iCurIndex = (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
+	int iIndex = std::min(iCount - 1, (iCurIndex + 1));
+	SendMessage(hwndListTable, LB_SETCURSEL, iIndex, 0);
 	return ;
 }
 
 void CPlayerView::InitScrollVolume(unsigned int iVolume)
 {
+	if (iVolume > MAX_PLAYER_VOLUME)
+	{
+		iVolume = MAX_PLAYER_VOLUME;
+	}
+
 	HWND hwndScrollVolume = GetDlgItem(m_hWnd, SCROLL_VOLUME_ID);
 	SetScrollRange(hwndScrollVolume, SB_CTL, 0, MAX_PLAYER_VOLUME, FALSE);
 	SetScrollPos(hwndScrollVolume, SB_CTL, MAX_PLAYER_VOLUME - iVolume, TRUE);
@@ -881,7 +965,13 @@ void CPlayerView::UpdateScrollVolume(unsigned int& iVolume, WPARAM wParam, LPARA
 	{
 		return ;
 	}
-	static unsigned int iIndex = iVolume;
+
+	if (iVolume > MAX_PLAYER_VOLUME)
+	{
+		iVolume = MAX_PLAYER_VOLUME;
+	}
+
+	static int iIndex = (int)iVolume;
 	switch(LOWORD(wParam))
 	{
 	case SB_PAGEDOWN:
@@ -909,8 +999,18 @@ void CPlayerView::UpdateScrollVolume(unsigned int& iVolume, WPARAM wParam, LPARA
 	default:
 		break;
 	}
+
+	if (iIndex < 0)
+	{
+		iIndex = 0;
+	}
+	else if (iIndex > MAX_PLAYER_VOLUME)
+	{
+		iIndex = MAX_PLAYER_VOLUME;
+	}
+
 	SetScrollPos((HWND)lParam, SB_CTL, MAX_PLAYER_VOLUME - iIndex, TRUE);
-	iVolume = iIndex;
+	iVolume = (unsigned int)iIndex;
 	return ;
 }
 

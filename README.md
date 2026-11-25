@@ -34,7 +34,6 @@ src/
     AudioPlayer.cpp
     AudioPlayer.h
   common/
-    Common.cpp
     Common.h
     stdafx.cpp
     stdafx.h

@@ -47,9 +47,6 @@
     <ClCompile Include="audio\AudioPlayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="common\Common.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="common\stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

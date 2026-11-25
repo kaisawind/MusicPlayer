@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(MusicPlayer WIN32
   src/app/MusicPlayer.cpp
   src/audio/AudioPlayer.cpp
-  src/common/Common.cpp
   src/common/stdafx.cpp
   src/ui/PlayerView.cpp
 )

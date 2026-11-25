@@ -12,7 +12,6 @@
 #define IDI_SMALL                       108
 #define IDC_MUSICPLAYER                 109
 #define IDR_MAINFRAME                   128
-#define IDM_OPEN                        32780
 #define IDM_PLAYPAUSE                   32781
 #define IDM_STOP                        32782
 #define IDM_NEXTSONG                    32785

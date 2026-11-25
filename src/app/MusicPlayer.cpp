@@ -12,6 +12,7 @@
 static HINSTANCE hInst;
 static TCHAR szTitle[MAX_LOADSTRING];
 static TCHAR szWindowClass[MAX_LOADSTRING];
+static bool g_bPageScroll = false;
 
 static void SetWorkingDirectoryToExe()
 {
@@ -172,7 +173,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 ******************************************************************************/
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
 	static int iDeltaPerLine = 0;	// 鼠标滚动每行需要的幅度
@@ -198,7 +198,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case USER_MOUSEHWHEEL:
 	case WM_MOUSEHWHEEL:
 	{
-		LRESULT lResult = obj.UpdateScrollListByMouse(iDeltaPerLine, message, wParam, lParam);
+		LRESULT lResult = obj.UpdateScrollListByMouse(iDeltaPerLine, g_bPageScroll, message, wParam, lParam);
 		if (NULL != lResult)
 		{
 			return lResult;
@@ -223,31 +223,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//SetFocus(hwndChild);
 		break;
 	case WM_COMMAND:
-		wmId    = LOWORD(wParam);
-		wmEvent = HIWORD(wParam);
-
+	{
 		// 分析菜单选择:
-		if (NULL != MenuProc(hWnd, message, wParam, lParam))
+		LRESULT lResult = MenuProc(hWnd, message, wParam, lParam);
+		if (0 != lResult)
 		{
-			return MenuProc(hWnd, message, wParam, lParam);
+			return lResult;
 		}
 		// 分析列表框
-		if (NULL != ListBoxProc(hWnd, message, wParam, lParam))
+		lResult = ListBoxProc(hWnd, message, wParam, lParam);
+		if (0 != lResult)
 		{
-			return ListBoxProc(hWnd, message, wParam, lParam);
+			return lResult;
 		}
 		// 分析按钮
-		if (NULL != ButtonProc(hWnd, message, wParam, lParam))
+		lResult = ButtonProc(hWnd, message, wParam, lParam);
+		if (0 != lResult)
 		{
-			return ButtonProc(hWnd, message, wParam, lParam);
+			return lResult;
 		}
 		break;
+	}
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: 在此添加任意绘图代码...		
-		obj.UpdateRectCurreTime(AudioPlayer->GetPlayStatus()->szCurrentTime);
-		obj.UpdateRectBeginTime(TEXT("00:00:000"));
-		obj.UpdateRectTotalTime(AudioPlayer->GetFileStatus()->szTotalTime);
+		obj.UpdateRectCurreTime(hdc, AudioPlayer->GetPlayStatus()->szCurrentTime);
+		obj.UpdateRectBeginTime(hdc, TEXT("00:00:000"));
+		obj.UpdateRectTotalTime(hdc, AudioPlayer->GetFileStatus()->szTotalTime);
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
@@ -298,6 +300,22 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+static bool PlayFile(HWND hWnd, const TCHAR* szFileName)
+{
+	if ((NULL == szFileName) || (TEXT('\0') == szFileName[0]))
+	{
+		return false;
+	}
+
+	if (FALSE == AudioPlayer->NewMusicPlay(szFileName))
+	{
+		MessageBox(hWnd, TEXT("无法播放选中的文件。"), TEXT("MusicPlayer"), MB_ICONWARNING);
+		return false;
+	}
+
+	return true;
+}
+
 /*****************************************************************************
 * @func		:	MenuProc(HWND , UINT , WPARAM , LPARAM )
 * @summary	:	“菜单”栏的消息处理程序。
@@ -311,7 +329,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 *			:	WPARAM wParam : wParam
 *			:	LPARAM lParam : lParam
 * @out		:	none
-* @return	:	NULL	: 有消息处理の情况
+* @return	:	TRUE	: 有消息处理の情况
 *			:	DefWindowProc	: 没有消息对应的处理
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 19:52:10
@@ -319,17 +337,23 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 ******************************************************************************/
 LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int wmId    = LOWORD(wParam);
+	int wmId = LOWORD(wParam);
 	CPlayerView obj(hInst, hWnd);
-	TCHAR szFileName[MAX_LOADSTRING + 1] = L"";
+	TCHAR szFileName[MAX_PATH] = L"";
 
 	switch (wmId)
 	{
 	case IDM_PLAY:
-		obj.GetCurrentSelectListName(szFileName);		
+		if (LB_ERR == obj.GetCurrentSelectListName(szFileName, MAX_PATH))
+		{
+			break;
+		}
 		if (0 != lstrcmp(szFileName, AudioPlayer->GetFileStatus()->szFileName))
 		{
-			AudioPlayer->NewMusicPlay(szFileName);
+			if (!PlayFile(hWnd, szFileName))
+			{
+				break;
+			}
 			obj.InvalidateRectTotalTime();
 			obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		}
@@ -340,10 +364,16 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_PAUSE:
-		obj.GetCurrentSelectListName(szFileName);		
+		if (LB_ERR == obj.GetCurrentSelectListName(szFileName, MAX_PATH))
+		{
+			break;
+		}
 		if (0 != lstrcmp(szFileName, AudioPlayer->GetFileStatus()->szFileName))
 		{
-			AudioPlayer->NewMusicPlay(szFileName);
+			if (!PlayFile(hWnd, szFileName))
+			{
+				break;
+			}
 			obj.InvalidateRectTotalTime();
 			obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		}
@@ -355,20 +385,31 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case IDM_STOP:
 		AudioPlayer->MusicStop();
-		// obj.InvalidateRectTotalTime();		// 目测停止播放时不需要更新文件播放时间
 		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_PRESONG:
-		obj.GetPreviousSongName(szFileName);
-		AudioPlayer->NewMusicPlay(szFileName);
+		if (LB_ERR == obj.GetPreviousSongName(szFileName, MAX_PATH))
+		{
+			break;
+		}
+		if (!PlayFile(hWnd, szFileName))
+		{
+			break;
+		}
 		obj.SetPreviousIndex();
 		obj.InvalidateRectTotalTime();
 		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case IDM_NEXTSONG:
-		obj.GetNextSongName(szFileName);
-		AudioPlayer->NewMusicPlay(szFileName);
+		if (LB_ERR == obj.GetNextSongName(szFileName, MAX_PATH))
+		{
+			break;
+		}
+		if (!PlayFile(hWnd, szFileName))
+		{
+			break;
+		}
 		obj.SetNextIndex();
 		obj.InvalidateRectTotalTime();
 		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
@@ -383,7 +424,7 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	return NULL;
+	return TRUE;
 }
 
 /*****************************************************************************
@@ -400,7 +441,7 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 *			:	WPARAM wParam : wParam
 *			:	LPARAM lParam : lParam
 * @out		:	none
-* @return	:	NULL	: 有消息处理の情况
+* @return	:	TRUE	: 有消息处理の情况
 *			:	DefWindowProc	: 没有消息对应的处理
 * @author	:	Li Jiachun
 * @time		:	2013-3-31 19:55:48
@@ -409,25 +450,36 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 LRESULT ButtonProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId = LOWORD(wParam);
-	int wmEvent = HIWORD(wParam);
 	CPlayerView obj(hInst, hWnd);
-	TCHAR szFileName[MAX_LOADSTRING + 1];
+	TCHAR szFileName[MAX_PATH] = L"";
 
 	switch (wmId)
 	{
 	case BUTTON_PRESONG_ID:
-		obj.GetPreviousSongName(szFileName);
-		AudioPlayer->NewMusicPlay(szFileName);
+		if (LB_ERR == obj.GetPreviousSongName(szFileName, MAX_PATH))
+		{
+			break;
+		}
+		if (!PlayFile(hWnd, szFileName))
+		{
+			break;
+		}
 		obj.SetPreviousIndex();
 		obj.InvalidateRectTotalTime();
 		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case BUTTON_PLAYPAUSE_ID:
-		obj.GetCurrentSelectListName(szFileName);		
+		if (LB_ERR == obj.GetCurrentSelectListName(szFileName, MAX_PATH))
+		{
+			break;
+		}
 		if (0 != lstrcmp(szFileName, AudioPlayer->GetFileStatus()->szFileName))
 		{
-			AudioPlayer->NewMusicPlay(szFileName);
+			if (!PlayFile(hWnd, szFileName))
+			{
+				break;
+			}
 			obj.InvalidateRectTotalTime();
 			obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		}
@@ -438,8 +490,14 @@ LRESULT ButtonProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
 	case BUTTON_NEXTSONG_ID:
-		obj.GetNextSongName(szFileName);
-		AudioPlayer->NewMusicPlay(szFileName);
+		if (LB_ERR == obj.GetNextSongName(szFileName, MAX_PATH))
+		{
+			break;
+		}
+		if (!PlayFile(hWnd, szFileName))
+		{
+			break;
+		}
 		obj.SetNextIndex();
 		obj.InvalidateRectTotalTime();
 		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
@@ -458,7 +516,7 @@ LRESULT ButtonProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	return NULL;
+	return TRUE;
 }
 
 /*****************************************************************************
@@ -470,7 +528,7 @@ LRESULT ButtonProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 *			:	WPARAM wParam : wParam
 *			:	LPARAM lParam : lParam
 * @out		:	none
-* @return	:	NULL	: 有消息处理の情况
+* @return	:	TRUE	: 有消息处理の情况
 *			:	DefWindowProc	: 没有消息对应的处理
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 19:52:10
@@ -485,13 +543,19 @@ LRESULT ListBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	int wmEvent = HIWORD(wParam);
 	CPlayerView obj(hInst, hWnd);
-	TCHAR szFileName[MAX_LOADSTRING + 1];
+	TCHAR szFileName[MAX_PATH] = L"";
 
 	switch (wmEvent)
 	{
 	case LBN_DBLCLK:
-		obj.GetCurrentSelectListName(szFileName);
-		AudioPlayer->NewMusicPlay(szFileName);
+		if (LB_ERR == obj.GetCurrentSelectListName(szFileName, MAX_PATH))
+		{
+			break;
+		}
+		if (!PlayFile(hWnd, szFileName))
+		{
+			break;
+		}
 		obj.InvalidateRectTotalTime();
 		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		obj.ShowPlayOrPause(true);
@@ -499,7 +563,7 @@ LRESULT ListBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	return NULL;
+	return TRUE;
 }
 
 /*****************************************************************************
@@ -518,7 +582,12 @@ int GetMouseDeltaPerLine()
 	int iDeltaPerLine = 0;
 	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &ulScrollLines, 0);
 
-	if (ulScrollLines)
+	g_bPageScroll = (WHEEL_PAGESCROLL == ulScrollLines);
+	if (g_bPageScroll)
+	{
+		iDeltaPerLine = WHEEL_DELTA;
+	}
+	else if (ulScrollLines)
 	{
 		iDeltaPerLine = WHEEL_DELTA / ulScrollLines;
 	}
