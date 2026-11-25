@@ -5,6 +5,8 @@
 原 VS2012 工程，已升级到 VS 18 (Visual Studio 2026)
 使用Win32 API编程
 
+详细设计见 [docs/设计文档.md](docs/设计文档.md)。
+
 ## 2. 源代码目录结构
 
 ```shell
@@ -14,7 +16,10 @@ CMakeLists.txt
 cmake/
   toolchain-zig-x86-windows.cmake
 docs/
+  设计文档.md
   设计文档.xlsx
+  images/
+    ui-layout.png
 third_party/
   libzplay/
     libzplay.dll
