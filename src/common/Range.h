@@ -1,4 +1,8 @@
-﻿#pragma once
+﻿/********************************************************************************
+* @file		:	Range.h
+* @summary	:	区间、列表索引和播放模式辅助函数
+********************************************************************************/
+#pragma once
 
 // 把 value 夹到 [minValue, maxValue] 区间内。
 inline int ClampInt(int value, int minValue, int maxValue)
@@ -46,6 +50,7 @@ inline int PrevIndex(int current, int count)
 	return current - 1;
 }
 
+// 播放模式：顺序、单曲循环、列表循环、随机。
 enum PlayMode
 {
 	PlayModeSequential = 0,

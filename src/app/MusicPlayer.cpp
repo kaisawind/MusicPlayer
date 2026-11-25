@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * @file		:	MusicPlayer.cpp
-* @summary	:	MusicPlayer应用程序的入口点。
+* @summary	:	应用入口、主窗口消息、菜单分发和定时器。
 * @author	:	DaPPer
 * @time		:	2013-3-24 13:27:27
 * @history	:	
@@ -17,6 +17,7 @@ static TCHAR szWindowClass[MAX_LOADSTRING];
 static bool g_bPageScroll = false;
 static PlayMode g_playMode = PlayModeSequential;
 
+// 把工作目录切到 exe 所在目录。
 static void SetWorkingDirectoryToExe()
 {
 	TCHAR szPath[MAX_PATH];
@@ -105,7 +106,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
- 	// TODO: 在此放置代码。
 	MSG msg;
 	HACCEL hAccelTable;
 
@@ -255,7 +255,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SETTINGCHANGE:
 		iDeltaPerLine = GetMouseDeltaPerLine();
 		break;
-	case USER_MOUSEHWHEEL:
+	case WM_MOUSEWHEEL:
 	case WM_MOUSEHWHEEL:
 	{
 		LRESULT lResult = obj.UpdateScrollListByMouse(iDeltaPerLine, g_bPageScroll, message, wParam, lParam);
@@ -292,11 +292,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	case WM_SETFOCUS:
-		// TODO: 在此添加设置焦点的代码...
-		//hwndChild = GetDlgItem(hWnd, SCROLL_LIST_ID);
-		//SetFocus(hwndChild);
-		break;
 	case WM_COMMAND:
 	{
 		// 分析菜单选择:
@@ -512,6 +507,7 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case IDM_OPEN:
 	{
+		// 选择文件，切换目录，刷新列表并播放
 		TCHAR szFile[MAX_PATH] = L"";
 		if (!BrowseForFile(hWnd, szFile, MAX_PATH))
 		{

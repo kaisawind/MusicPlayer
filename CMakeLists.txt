@@ -89,6 +89,7 @@ add_custom_command(TARGET MusicPlayer POST_BUILD
           $<TARGET_FILE_DIR:MusicPlayer>
 )
 
+# 原生构建的单元测试目标（交叉编译时不生成，测试在 Windows 上运行）
 include(CTest)
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
   add_executable(MusicPlayerTests tests/test_range.cpp)

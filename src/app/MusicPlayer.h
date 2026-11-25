@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
 * @file		:	MusicPlayer.h
-* @summary	:	MusicPlayer的主头文件
+* @summary	:	应用层头文件：窗口、菜单、定时器声明
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 13:26:03
 * @history	:
@@ -11,8 +11,8 @@
 #include "AudioPlayer.h"
 #include "PlayerView.h"
 
+// 全局音频播放器实例
 #define AudioPlayer CAudioPlayer::getInstance()
-#define USER_MOUSEHWHEEL	(0x020A)
 
 enum enum_Timer_em
 {

@@ -1,3 +1,4 @@
+﻿// 区间、列表索引和播放模式边界测试。
 #include "Range.h"
 
 #include <climits>

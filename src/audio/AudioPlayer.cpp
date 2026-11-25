@@ -153,7 +153,7 @@ int CAudioPlayer::MusicPlay()
 
 /*****************************************************
 *	@func	:	MusicPause()
-*	@summary:	暂停音乐文件播放
+*	@summary:	暂停或继续播放
 *	@in		:	void
 *	@out	:	none
 *	@return	:	TRUE : ALL OK
@@ -390,8 +390,7 @@ void CAudioPlayer::SetMusicCurrentTime()
 *	@summary:	获取音乐的播放状态
 *	@in		:	void
 *	@out	:	none
-*	@return	:	TRUE : 播放状态
-*			:	FALSE : 播放完了
+*	@return	:	int : 非 0 表示正在播放，0 表示已停止/结束
 *	@author	:	DaPPer
 *	@time	:	2013-4-3 22:03:40
 *	@history:	
@@ -453,6 +452,7 @@ void CAudioPlayer::SeekToMilliSecond(unsigned int iMilliSecond)
 	return ;
 }
 
+// 设置左右声道音量（0-100）。
 void CAudioPlayer::SetPlayerVolume(int iVolume)
 {
 	if (NULL == player)
@@ -474,6 +474,7 @@ void CAudioPlayer::SetPlayerVolume(int iVolume)
 	return ;
 }
 
+// 返回当前播放位置（毫秒）。
 unsigned int CAudioPlayer::GetCurrentMilliSecond()
 {
 	if (NULL == player)
@@ -486,6 +487,7 @@ unsigned int CAudioPlayer::GetCurrentMilliSecond()
 	return pTime.ms;
 }
 
+// 返回总时长（毫秒）。
 unsigned int CAudioPlayer::GetTotalMilliSecond()
 {
 	if (NULL == player)

@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
-* @file		:	PlayerView.h
-* @summary	:	MusicPlayer视图控制类的实现。
+* @file		:	PlayerView.cpp
+* @summary	:	MusicPlayer 主窗口视图控制类的实现。
 * @author	:	Li Jiachun
 * @time		:	2013-3-29 20:48:05
 * @history	:	
@@ -398,7 +398,7 @@ int CPlayerView::CreateListTable()
 
 /*****************************************************************************
 * @func		:	CreateListPath
-* @summary	:	创建显示当前播放的歌曲的路径
+* @summary	:	创建显示当前目录的 Static 控件
 * @in		:	void
 * @out		:	none
 * @return	:	TRUE	: 创建成功
@@ -433,9 +433,8 @@ int CPlayerView::CreateListPath()
 
 /*****************************************************************************
 * @func		:	ShowPlayOrPause
-* @summary	:	显示播放暂停的文言
-* @in		:	bool bPlay = true : 暂停
-*			:	bool bPlay = false : 播放
+* @summary	:	根据播放状态更新播放/暂停按钮文字
+* @in		:	bool bPlay : true 表示正在播放，显示“暂停”；false 显示“播放”
 * @out		:	none
 * @return	:	void
 * @author	:	Li Jiachun
