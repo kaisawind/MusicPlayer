@@ -1,4 +1,11 @@
-﻿// 区间、列表索引和播放模式边界测试。
+﻿/**
+ * @file test_range.cpp
+ * @brief 区间、列表索引和播放模式边界测试。
+ * @author kaisawind <wind.kaisa@gmail.com>
+ * @date 2026-11-25
+ * @par 变更历史
+ * - 2026-11-25 新增区间、索引和播放模式测试。
+ */
 #include "Range.h"
 
 #include <climits>

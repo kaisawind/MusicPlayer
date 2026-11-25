@@ -1,10 +1,12 @@
-﻿/********************************************************************************
-* @file		:	AudioPlayer.h
-* @summary	:	libzplay 音频播放封装
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 14:53:06
-* @history	:	
-********************************************************************************/
+﻿/**
+ * @file AudioPlayer.h
+ * @brief libzplay 音频播放封装
+ * @author kaisawind <wind.kaisa@gmail.com>
+ * @date 2013-03-24
+ * @par 变更历史
+ * - 2013-03-24 初版。
+ * - 2026-11-25 重构、DPI、播放模式、测试与注释整理，详见 CHANGELOG.md。
+ */
 
 #ifndef __CAUDIOPLAYER_H__
 #define __CAUDIOPLAYER_H__

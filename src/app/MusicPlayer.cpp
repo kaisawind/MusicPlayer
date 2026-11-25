@@ -1,10 +1,12 @@
-﻿/*******************************************************************************
-* @file		:	MusicPlayer.cpp
-* @summary	:	应用入口、主窗口消息、菜单分发和定时器。
-* @author	:	DaPPer
-* @time		:	2013-3-24 13:27:27
-* @history	:	
-********************************************************************************/
+﻿/**
+ * @file MusicPlayer.cpp
+ * @brief 应用入口、主窗口消息、菜单分发和定时器。
+ * @author kaisawind <wind.kaisa@gmail.com>
+ * @date 2013-03-24
+ * @par 变更历史
+ * - 2013-03-24 初版。
+ * - 2026-11-25 重构、DPI、播放模式、测试与注释整理，详见 CHANGELOG.md。
+ */
 
 #include "stdafx.h"
 #include "MusicPlayer.h"
@@ -85,19 +87,14 @@ static void SaveLastDirectory()
 	}
 }
 
-/*****************************************************************************
-* @func		:	int WINAPI WinMain
-* @summary	:	应用程序的入口函数.
-* @in		:	HINSTANCE hInstance : 实例句柄
-*			:	HINSTANCE hPreInstance : NULL
-*			:	LPSTR lpCmdLine	: 运行程序的命令行
-*			:	int iShowCmd	: 最大化、最小化、...
-* @out		:	none
-* @return	:	0
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 13:30:46
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 应用程序的入口函数.
+ * @param[in] hInstance 实例句柄
+ * @param[in] hPreInstance NULL
+ * @param[in] lpCmdLine 运行程序的命令行
+ * @param[in] iShowCmd 最大化、最小化、...
+ * @return 0
+ */
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPTSTR    lpCmdLine,
@@ -141,17 +138,12 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	return (int) msg.wParam;
 }
 
-/*****************************************************************************
-* @func		:	MyRegisterClass(
-* @summary	:	注册窗口类。
-* @in		:	HINSTANCE hInstance : 实例句柄
-* @out		:	none
-* @return	:	注册成功: 窗口类型的标识号
-*			:	注册失败: 返回值为0
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 13:33:41
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 注册窗口类。
+ * @param[in] hInstance 实例句柄
+ * @return 注册成功: 窗口类型的标识号
+ * 注册失败: 返回值为0
+ */
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
@@ -173,18 +165,13 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	return RegisterClassEx(&wcex);
 }
 
-/*****************************************************************************
-* @func		:	InitInstance(HINSTANCE, int)
-* @summary	:	保存实例句柄并创建主窗口.
-* @in		:	HINSTANCE hInstance : 实例句柄
-*			:	int iShowCmd	: 最大化、最小化、...
-* @out		:	none
-* @return	:	TRUE	: 窗口创建成功
-*			:	FAULSE	: 窗口创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 13:43:22
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 保存实例句柄并创建主窗口.
+ * @param[in] hInstance 实例句柄
+ * @param[in] iShowCmd 最大化、最小化、...
+ * @return TRUE	: 窗口创建成功
+ * FAULSE	: 窗口创建失败
+ */
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    HWND hWnd;
@@ -225,25 +212,21 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-/*****************************************************************************
-* @func		:	WndProc(HWND, UINT, WPARAM, LPARAM)
-* @summary	:	处理主窗口的消息。
-* @message	:	WM_CREATE	- 窗口创建
-*			:	WM_COMMAND	- 处理应用程序菜单
-*			:	WM_PAINT	- 绘制主窗口
-*			:	WM_SIZE/WM_DPICHANGED - 重新布局
-*			:	WM_DESTROY	- 发送退出消息并返回
-* @in		:	HWND hwnd : 窗口句柄
-*			:	UINT iMessage : 消息
-*			:	WPARAM wParam : wParam
-*			:	LPARAM lParam : lParam
-* @out		:	none
-* @return	:	0 : 一般情况
-*			:	DefWindowProc(hwnd, iMessage, wParam, lParam) : 未处理的消息
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 13:45:03
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 处理主窗口的消息。
+ * @par 消息
+ * - WM_CREATE	- 窗口创建
+ * - WM_COMMAND	- 处理应用程序菜单
+ * - WM_PAINT	- 绘制主窗口
+ * - WM_SIZE/WM_DPICHANGED - 重新布局
+ * - WM_DESTROY	- 发送退出消息并返回
+ * @param[in] hwnd 窗口句柄
+ * @param[in] iMessage 消息
+ * @param[in] wParam wParam
+ * @param[in] lParam lParam
+ * @return 0 : 一般情况
+ * DefWindowProc(hwnd, iMessage, wParam, lParam) : 未处理的消息
+ */
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -376,23 +359,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-/*****************************************************************************
-* @func		:	About(HWND , UINT , WPARAM , LPARAM )
-* @summary	:	“关于”框的消息处理程序。
-* @message	:	WM_COMMAND	- 处理应用程序菜单
-*			:	WM_PAINT	- 绘制主窗口
-*			:	WM_DESTROY	- 发送退出消息并返回
-* @in		:	HWND hDlg : 窗口句柄
-*			:	UINT message : 消息
-*			:	WPARAM wParam : wParam
-*			:	LPARAM lParam : lParam
-* @out		:	none
-* @return	:	FALSE	: 其他情况
-*			:	TRUE	: 处理WM_INITDIALOG
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 13:49:11
-* @history	:	
-******************************************************************************/
+/**
+ * @brief “关于”框的消息处理程序。
+ * @par 消息
+ * - WM_COMMAND	- 处理应用程序菜单
+ * - WM_PAINT	- 绘制主窗口
+ * - WM_DESTROY	- 发送退出消息并返回
+ * @param[in] hDlg 窗口句柄
+ * @param[in] message 消息
+ * @param[in] wParam wParam
+ * @param[in] lParam lParam
+ * @return FALSE	: 其他情况
+ * TRUE	: 处理WM_INITDIALOG
+ */
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	UNREFERENCED_PARAMETER(lParam);
@@ -446,29 +425,25 @@ static bool BrowseForFile(HWND hWnd, TCHAR* szFile, int cchFile)
 	return (FALSE != GetOpenFileName(&ofn));
 }
 
-/*****************************************************************************
-* @func		:	MenuProc(HWND , UINT , WPARAM , LPARAM )
-* @summary	:	“菜单”栏的消息处理程序。
-* @message	:	IDM_OPEN	- 打开文件菜单
-*			:	IDM_PLAY	- 播放菜单
-*			:	IDM_PAUSE	- 暂停菜单
-*			:	IDM_STOP	- 停止菜单
-*			:	IDM_PRESONG	- 上一曲菜单
-*			:	IDM_NEXTSONG	- 下一曲菜单
-*			:	IDM_MODE_*	- 顺序/单曲循环/列表循环/随机
-*			:	IDM_ABOUT	- 关于菜单
-*			:	IDM_EXIT	- 退出菜单
-* @in		:	HWND hWnd : 窗口句柄
-*			:	UINT message : 消息
-*			:	WPARAM wParam : wParam
-*			:	LPARAM lParam : lParam
-* @out		:	none
-* @return	:	TRUE	: 有消息处理の情况
-*			:	DefWindowProc	: 没有消息对应的处理
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 19:52:10
-* @history	:	
-******************************************************************************/
+/**
+ * @brief “菜单”栏的消息处理程序。
+ * @par 消息
+ * - IDM_OPEN	- 打开文件菜单
+ * - IDM_PLAY	- 播放菜单
+ * - IDM_PAUSE	- 暂停菜单
+ * - IDM_STOP	- 停止菜单
+ * - IDM_PRESONG	- 上一曲菜单
+ * - IDM_NEXTSONG	- 下一曲菜单
+ * - IDM_MODE_*	- 顺序/单曲循环/列表循环/随机
+ * - IDM_ABOUT	- 关于菜单
+ * - IDM_EXIT	- 退出菜单
+ * @param[in] hWnd 窗口句柄
+ * @param[in] message 消息
+ * @param[in] wParam wParam
+ * @param[in] lParam lParam
+ * @return TRUE	: 有消息处理の情况
+ * DefWindowProc	: 没有消息对应的处理
+ */
 LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId = LOWORD(wParam);
@@ -619,26 +594,22 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-/*****************************************************************************
-* @func		:	ButtonProc(HWND , UINT , WPARAM , LPARAM )
-* @summary	:	按钮的消息处理程序。
-* @wmId		:	BUTTON_PRESONG_ID	- 上一首歌按钮
-*			:	BUTTON_PLAYPAUSE_ID	- 播放暂停按钮
-*			:	BUTTON_NEXTSONG_ID	- 下一首歌按钮
-*			:	BUTTON_FF_ID	- 快进按钮
-*			:	BUTTON_REW_ID	- 快退按钮
-*			:	BUTTON_STOP_ID	- 停止按钮
-* @in		:	HWND hWnd : 窗口句柄
-*			:	UINT message : 消息
-*			:	WPARAM wParam : wParam
-*			:	LPARAM lParam : lParam
-* @out		:	none
-* @return	:	TRUE	: 有消息处理の情况
-*			:	DefWindowProc	: 没有消息对应的处理
-* @author	:	Li Jiachun
-* @time		:	2013-3-31 19:55:48
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 按钮的消息处理程序。
+ * @par 处理的命令
+ * - BUTTON_PRESONG_ID	- 上一首歌按钮
+ * - BUTTON_PLAYPAUSE_ID	- 播放暂停按钮
+ * - BUTTON_NEXTSONG_ID	- 下一首歌按钮
+ * - BUTTON_FF_ID	- 快进按钮
+ * - BUTTON_REW_ID	- 快退按钮
+ * - BUTTON_STOP_ID	- 停止按钮
+ * @param[in] hWnd 窗口句柄
+ * @param[in] message 消息
+ * @param[in] wParam wParam
+ * @param[in] lParam lParam
+ * @return TRUE	: 有消息处理の情况
+ * DefWindowProc	: 没有消息对应的处理
+ */
 LRESULT ButtonProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId = LOWORD(wParam);
@@ -711,21 +682,17 @@ LRESULT ButtonProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-/*****************************************************************************
-* @func		:	ListBoxProc(HWND , UINT , WPARAM , LPARAM )
-* @summary	:	列表框消息处理程序。
-* @wmEvent	:	LBN_DBLCLK : 鼠标双击列表框条目
-* @in		:	HWND hWnd : 窗口句柄
-*			:	UINT message : 消息
-*			:	WPARAM wParam : wParam
-*			:	LPARAM lParam : lParam
-* @out		:	none
-* @return	:	TRUE	: 有消息处理の情况
-*			:	DefWindowProc	: 没有消息对应的处理
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 19:52:10
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 列表框消息处理程序。
+ * @par 通知
+ * - LBN_DBLCLK : 鼠标双击列表框条目
+ * @param[in] hWnd 窗口句柄
+ * @param[in] message 消息
+ * @param[in] wParam wParam
+ * @param[in] lParam lParam
+ * @return TRUE	: 有消息处理の情况
+ * DefWindowProc	: 没有消息对应的处理
+ */
 LRESULT ListBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (LIST_TABLE_ID != LOWORD(wParam))
@@ -758,17 +725,11 @@ LRESULT ListBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-/*****************************************************************************
-* @func		:	GetMouseDeltaPerLine
-* @summary	:	获取鼠标每滚动一下时的滚轮滚动大小
-*			:	同时设置 g_bPageScroll（系统设置为“滚一屏”时为 true）
-* @in		:	void
-* @out		:	none
-* @return	:	int : 每格滚动的 delta；按页滚动时返回 WHEEL_DELTA，不滚动时返回 0
-* @author	:	Li Jiachun
-* @time		:	2013-3-31 19:41:08
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 获取鼠标每滚动一下时的滚轮滚动大小
+ * 同时设置 g_bPageScroll（系统设置为“滚一屏”时为 true）
+ * @return int : 每格滚动的 delta；按页滚动时返回 WHEEL_DELTA，不滚动时返回 0
+ */
 int GetMouseDeltaPerLine()
 {
 	ULONG ulScrollLines = 0;
@@ -791,19 +752,13 @@ int GetMouseDeltaPerLine()
 	return iDeltaPerLine;
 }
 
-/*****************************************************************************
-* @func		:	TimerProc
-* @summary	:	每秒更新进度；播放结束时按播放模式切换下一曲
-* @in		:	HWND hWnd : 窗口句柄
-*			:	UINT message : 消息
-*			:	WPARAM wParam : wParam
-*			:	LPARAM lParam : lParam
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:52:38
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 每秒更新进度；播放结束时按播放模式切换下一曲
+ * @param[in] hWnd 窗口句柄
+ * @param[in] message 消息
+ * @param[in] wParam wParam
+ * @param[in] lParam lParam
+ */
 void CALLBACK TimerProc(HWND hWnd, UINT message, UINT iTimerID, DWORD dwTime)
 {
 	CPlayerView obj(hInst, hWnd);

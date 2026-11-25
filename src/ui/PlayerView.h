@@ -1,10 +1,12 @@
-﻿/********************************************************************************
-* @file		:	PlayerView.h
-* @summary	:	MusicPlayer 主窗口视图控制类。
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:48:05
-* @history	:
-********************************************************************************/
+﻿/**
+ * @file PlayerView.h
+ * @brief MusicPlayer 主窗口视图控制类。
+ * @author kaisawind <wind.kaisa@gmail.com>
+ * @date 2013-03-29
+ * @par 变更历史
+ * - 2013-03-29 初版。
+ * - 2026-11-25 重构、DPI、播放模式、测试与注释整理，详见 CHANGELOG.md。
+ */
 #ifndef __CPLAYERVIEW_H__
 #define __CPLAYERVIEW_H__
 

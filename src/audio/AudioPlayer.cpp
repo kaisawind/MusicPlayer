@@ -1,10 +1,12 @@
-﻿/*******************************************************************************
-* @file		:	AudioPlayer.cpp
-* @summary	:	libzplay 音频播放封装
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 14:53:06
-* @history	:	
-********************************************************************************/
+﻿/**
+ * @file AudioPlayer.cpp
+ * @brief libzplay 音频播放封装
+ * @author kaisawind <wind.kaisa@gmail.com>
+ * @date 2013-03-24
+ * @par 变更历史
+ * - 2013-03-24 初版。
+ * - 2026-11-25 重构、DPI、播放模式、测试与注释整理，详见 CHANGELOG.md。
+ */
 
 #include "stdafx.h"
 #include "AudioPlayer.h"
@@ -12,32 +14,19 @@
 // 私有静态数据成员初始化
 ZPlay* CAudioPlayer::player = CreateZPlay();
 
-/*****************************************************
-*	@func	:	getInstance
-*	@summary:	单例模式实现
-*	@in		:	void
-*	@out	:	none
-*	@return	:	CAudioPlayer*
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 15:08:21
-*	@history:	
-******************************************************/
+/**
+ * @brief 单例模式实现
+ * @return CAudioPlayer*
+ */
 CAudioPlayer* CAudioPlayer::getInstance(void )
 {
 	static CAudioPlayer obj;
 	return &obj;
 }
 
-/*****************************************************
-*	@func	:	CAudioPlayer
-*	@summary:	构造函数
-*	@in		:	void
-*	@out	:	none
-*	@return	:	none
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 15:14:37
-*	@history:	
-******************************************************/
+/**
+ * @brief 构造函数
+ */
 CAudioPlayer::CAudioPlayer()
 {
 	// 文件状态初始化
@@ -61,17 +50,12 @@ CAudioPlayer::CAudioPlayer()
 	}
 }
 
-/*****************************************************
-*	@func	:	OpenFile(const TCHAR*)
-*	@summary:	打开音乐文件
-*	@in		:	const TCHAR* szFileName	: 要打开的文件名
-*	@out	:	none
-*	@return	:	TRUE : ALL OK
-*			:	FALSE : 打开文件失败
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 15:46:31
-*	@history:	
-******************************************************/
+/**
+ * @brief 打开音乐文件
+ * @param[in] szFileName 要打开的文件名
+ * @return TRUE : ALL OK
+ * FALSE : 打开文件失败
+ */
 int CAudioPlayer::OpenFile(const TCHAR* szFileName)
 {
 	if (NULL == player)
@@ -102,17 +86,11 @@ int CAudioPlayer::OpenFile(const TCHAR* szFileName)
 	return iRet;
 }
 
-/*****************************************************
-*	@func	:	MusicPlay()
-*	@summary:	播放音乐文件
-*	@in		:	void
-*	@out	:	none
-*	@return	:	TRUE : ALL OK
-*			:	FALSE : 音乐播放失败
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 16:06:55
-*	@history:	
-******************************************************/
+/**
+ * @brief 播放音乐文件
+ * @return TRUE : ALL OK
+ * FALSE : 音乐播放失败
+ */
 int CAudioPlayer::MusicPlay()
 {
 	if (NULL == player)
@@ -151,17 +129,11 @@ int CAudioPlayer::MusicPlay()
 	return iRet;
 }
 
-/*****************************************************
-*	@func	:	MusicPause()
-*	@summary:	暂停或继续播放
-*	@in		:	void
-*	@out	:	none
-*	@return	:	TRUE : ALL OK
-*			:	FALSE : 音乐播放失败
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 16:06:55
-*	@history:	
-******************************************************/
+/**
+ * @brief 暂停或继续播放
+ * @return TRUE : ALL OK
+ * FALSE : 音乐播放失败
+ */
 int CAudioPlayer::MusicPause()
 {
 	if (NULL == player)
@@ -188,17 +160,11 @@ int CAudioPlayer::MusicPause()
 
 }
 
-/*****************************************************
-*	@func	:	MusicStop()
-*	@summary:	停止播放音乐文件
-*	@in		:	void
-*	@out	:	none
-*	@return	:	TRUE : ALL OK
-*			:	FALSE : 音乐停止播放失败
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 19:11:03
-*	@history:	
-******************************************************/
+/**
+ * @brief 停止播放音乐文件
+ * @return TRUE : ALL OK
+ * FALSE : 音乐停止播放失败
+ */
 int CAudioPlayer::MusicStop()
 {
 	// 文件没打开直接返回
@@ -219,47 +185,29 @@ int CAudioPlayer::MusicStop()
 	return iRet;
 }
 
-/*****************************************************
-*	@func	:	GetPlayStatus()
-*	@summary:	获取播放状态
-*	@in		:	void
-*	@out	:	none
-*	@return	:	PlayStatus : 播放状态结构体
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 22:34:41
-*	@history:	
-******************************************************/
+/**
+ * @brief 获取播放状态
+ * @return PlayStatus : 播放状态结构体
+ */
 tagPlayStatus_t* CAudioPlayer::GetPlayStatus()
 {
 	return &PlayStatus;
 }
 
-/*****************************************************
-*	@func	:	GetFileStatus()
-*	@summary:	获取文件状态
-*	@in		:	void
-*	@out	:	none
-*	@return	:	FileStatus : 文件状态结构体
-*	@author	:	DaPPer
-*	@time	:	2013-3-24 22:34:41
-*	@history:	
-******************************************************/
+/**
+ * @brief 获取文件状态
+ * @return FileStatus : 文件状态结构体
+ */
 tagFileStatus_t* CAudioPlayer::GetFileStatus()
 {
 	return &FileStatus;
 }
 
-/*****************************************************
-*	@func	:	MusicClose()
-*	@summary:	关闭当前文件，复位打开/播放状态
-*	@in		:	void
-*	@out	:	none
-*	@return	:	TRUE : ALL OK
-*			:	FALSE : 关闭失败
-*	@author	:	DaPPer
-*	@time	:	2013-3-30 16:02:21
-*	@history:	
-******************************************************/
+/**
+ * @brief 关闭当前文件，复位打开/播放状态
+ * @return TRUE : ALL OK
+ * FALSE : 关闭失败
+ */
 int CAudioPlayer::MusicClose()
 {
 	if (NULL == player)
@@ -278,17 +226,12 @@ int CAudioPlayer::MusicClose()
 	return iRet;
 }
 
-/*****************************************************
-*	@func	:	NewMusicPlay
-*	@summary:	打开并播放新文件；失败时尝试恢复当前文件和位置
-*	@in		:	const TCHAR* szFileName	: 要播放的歌曲的名字
-*	@out	:	none
-*	@return	:	TRUE : ALL OK
-*			:	FALSE : 音乐播放失败
-*	@author	:	DaPPer
-*	@time	:	2013-3-31 20:17:40
-*	@history:	
-******************************************************/
+/**
+ * @brief 打开并播放新文件；失败时尝试恢复当前文件和位置
+ * @param[in] szFileName 要播放的歌曲的名字
+ * @return TRUE : ALL OK
+ * FALSE : 音乐播放失败
+ */
 int CAudioPlayer::NewMusicPlay(const TCHAR* szFileName)
 {
 	if ((NULL == player) || (NULL == szFileName))
@@ -331,16 +274,9 @@ int CAudioPlayer::NewMusicPlay(const TCHAR* szFileName)
 	return FALSE;
 }
 
-/*****************************************************
-*	@func	:	SetMusicTotalTime
-*	@summary:	设置音乐的总时间
-*	@in		:	void
-*	@out	:	none
-*	@return	:	void
-*	@author	:	DaPPer
-*	@time	:	2013-4-3 22:03:40
-*	@history:	
-******************************************************/
+/**
+ * @brief 设置音乐的总时间
+ */
 void CAudioPlayer::SetMusicTotalTime()
 {
 	if (NULL == player)
@@ -358,16 +294,9 @@ void CAudioPlayer::SetMusicTotalTime()
 	return ;
 }
 
-/*****************************************************
-*	@func	:	SetMusicCurrentTime
-*	@summary:	设置音乐的当前时间
-*	@in		:	void
-*	@out	:	none
-*	@return	:	void
-*	@author	:	DaPPer
-*	@time	:	2013-4-3 22:03:40
-*	@history:	
-******************************************************/
+/**
+ * @brief 设置音乐的当前时间
+ */
 void CAudioPlayer::SetMusicCurrentTime()
 {
 	if (NULL == player)
@@ -385,16 +314,10 @@ void CAudioPlayer::SetMusicCurrentTime()
 	return ;
 }
 
-/*****************************************************
-*	@func	:	GetStatus
-*	@summary:	获取音乐的播放状态
-*	@in		:	void
-*	@out	:	none
-*	@return	:	int : 非 0 表示正在播放，0 表示已停止/结束
-*	@author	:	DaPPer
-*	@time	:	2013-4-3 22:03:40
-*	@history:	
-******************************************************/
+/**
+ * @brief 获取音乐的播放状态
+ * @return int : 非 0 表示正在播放，0 表示已停止/结束
+ */
 int CAudioPlayer::GetStatus()
 {
 	if (NULL == player)
@@ -407,17 +330,10 @@ int CAudioPlayer::GetStatus()
 	return status.fPlay;
 }
 
-/*****************************************************
-*	@func	:	Seek
-*	@summary:	快进快退处理
-*	@in		:	int iTime >= 0 : 快进
-*			:	int iTime <  0 : 快退
-*	@out	:	none
-*	@return	:	void
-*	@author	:	DaPPer
-*	@time	:	2013-4-3 22:03:40
-*	@history:	
-******************************************************/
+/**
+ * @brief 快进快退处理
+ * @param[in] iTime 秒数；>=0 快进，<0 快退
+ */
 void CAudioPlayer::Seek(int iTime)
 {
 	if ((NULL == player) || (false == PlayStatus.bFileOpen))

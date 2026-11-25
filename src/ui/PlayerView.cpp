@@ -1,10 +1,12 @@
-﻿/********************************************************************************
-* @file		:	PlayerView.cpp
-* @summary	:	MusicPlayer 主窗口视图控制类的实现。
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:48:05
-* @history	:	
-********************************************************************************/
+﻿/**
+ * @file PlayerView.cpp
+ * @brief MusicPlayer 主窗口视图控制类的实现。
+ * @author kaisawind <wind.kaisa@gmail.com>
+ * @date 2013-03-29
+ * @par 变更历史
+ * - 2013-03-29 初版。
+ * - 2026-11-25 重构、DPI、播放模式、测试与注释整理，详见 CHANGELOG.md。
+ */
 #include "stdafx.h"
 #include "PlayerView.h"
 #include "Range.h"
@@ -65,17 +67,11 @@ CPlayerView::CPlayerView(HINSTANCE hInst, HWND hWnd)
 	SetRectEmpty(&m_rectCurrent);
 }
 
-/*****************************************************************************
-* @func		:	CreateButtonPreSong
-* @summary	:	创建上一曲的Button
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建上一曲的Button
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateButtonPreSong()
 {
 	int iRet = FALSE;
@@ -97,17 +93,11 @@ int CPlayerView::CreateButtonPreSong()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateButtonNextSong
-* @summary	:	创建下一曲的Button
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建下一曲的Button
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateButtonNextSong()
 {
 	int iRet = FALSE;
@@ -129,17 +119,11 @@ int CPlayerView::CreateButtonNextSong()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateButtonREW
-* @summary	:	创建快退的Button
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建快退的Button
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateButtonREW()
 {
 	int iRet = FALSE;
@@ -162,17 +146,11 @@ int CPlayerView::CreateButtonREW()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateButtonFF
-* @summary	:	创建快进的Button
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建快进的Button
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateButtonFF()
 {
 	int iRet = FALSE;
@@ -195,17 +173,11 @@ int CPlayerView::CreateButtonFF()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateButtonStop
-* @summary	:	创建停止的Button
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建停止的Button
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateButtonStop()
 {
 	int iRet = FALSE;
@@ -229,17 +201,11 @@ int CPlayerView::CreateButtonStop()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateButtonPlayPause
-* @summary	:	创建播放暂停的Button
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建播放暂停的Button
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateButtonPlayPause()
 {
 	int iRet = FALSE;
@@ -263,17 +229,11 @@ int CPlayerView::CreateButtonPlayPause()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateScrollList
-* @summary	:	创建歌曲列表的滚动条
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建歌曲列表的滚动条
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateScrollList()
 {
 	int iRet = FALSE;
@@ -296,17 +256,11 @@ int CPlayerView::CreateScrollList()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateScrollTime
-* @summary	:	创建歌曲播放时间进度条
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建歌曲播放时间进度条
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateScrollTime()
 {
 	int iRet = FALSE;
@@ -331,17 +285,11 @@ int CPlayerView::CreateScrollTime()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateScrollVolume
-* @summary	:	创建声音大小的滚动条
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建声音大小的滚动条
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateScrollVolume()
 {
 	int iRet = FALSE;
@@ -365,17 +313,11 @@ int CPlayerView::CreateScrollVolume()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateListTable
-* @summary	:	创建歌曲播放列表
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建歌曲播放列表
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateListTable()
 {
 	int iRet = FALSE;
@@ -400,17 +342,11 @@ int CPlayerView::CreateListTable()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	CreateListPath
-* @summary	:	创建显示当前目录的 Static 控件
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 创建成功
-*			:	FALSE	: 创建失败
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 创建显示当前目录的 Static 控件
+ * @return TRUE	: 创建成功
+ * FALSE	: 创建失败
+ */
 int CPlayerView::CreateListPath()
 {
 	int iRet = FALSE;
@@ -435,16 +371,10 @@ int CPlayerView::CreateListPath()
 	return iRet;
 }
 
-/*****************************************************************************
-* @func		:	ShowPlayOrPause
-* @summary	:	根据播放状态更新播放/暂停按钮文字
-* @in		:	bool bPlay : true 表示正在播放，显示“暂停”；false 显示“播放”
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:43:03
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 根据播放状态更新播放/暂停按钮文字
+ * @param[in] bPlay true 表示正在播放，显示“暂停”；false 显示“播放”
+ */
 void CPlayerView::ShowPlayOrPause(bool bPlay)
 {
 	HWND hwndChild = GetDlgItem(m_hWnd, BUTTON_PLAYPAUSE_ID);
@@ -461,16 +391,9 @@ void CPlayerView::ShowPlayOrPause(bool bPlay)
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	InitListTable
-* @summary	:	初始化歌曲播放列表
-* @in		:	void
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-3-29 20:36:36
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 初始化歌曲播放列表
+ */
 void CPlayerView::InitListTable()
 {
 	TCHAR szBuffer[MAX_LOADSTRING + 1];
@@ -499,13 +422,9 @@ int CPlayerView::SelectListName(const TCHAR* szName)
 	return iIndex;
 }
 
-/*****************************************************************************
-* @func		:	LayoutControls
-* @summary	:	按客户区大小和 DPI 重新排列所有子控件
-* @in		:	void
-* @out		:	none
-* @return	:	void
-******************************************************************************/
+/**
+ * @brief 按客户区大小和 DPI 重新排列所有子控件
+ */
 void CPlayerView::LayoutControls()
 {
 	RECT rcClient;
@@ -650,17 +569,11 @@ void CPlayerView::LayoutControls()
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	InitWindows
-* @summary	:	窗口初始化。
-* @in		:	void
-* @out		:	none
-* @return	:	TRUE	: 各窗口创建成功
-*			:	FALSE	: 窗口创建不成功
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 21:02:57
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 窗口初始化。
+ * @return TRUE	: 各窗口创建成功
+ * FALSE	: 窗口创建不成功
+ */
 int CPlayerView::InitWindows()
 {
 	if (CreateButtonFF()		&& 
@@ -682,16 +595,10 @@ int CPlayerView::InitWindows()
 	return FALSE;
 }
 
-/*****************************************************************************
-* @func		:	GetSongsCount
-* @summary	:	获取列表中所有歌曲的数目
-* @in		:	void
-* @out		:	none
-* @return	:	int iNo	: 歌曲的数目
-* @author	:	Li Jiachun
-* @time		:	2013-3-30 11:30:04
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 获取列表中所有歌曲的数目
+ * @return int iNo	: 歌曲的数目
+ */
 int CPlayerView::GetSongsCount()
 {
 	int iNo = 0;
@@ -700,16 +607,10 @@ int CPlayerView::GetSongsCount()
 	return iNo;
 }
 
-/*****************************************************************************
-* @func		:	GetListTopIndex
-* @summary	:	获取列表中第一条的索引值
-* @in		:	void
-* @out		:	none
-* @return	:	int iIndex	: 列表中第一条的索引值
-* @author	:	Li Jiachun
-* @time		:	2013-3-30 11:30:04
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 获取列表中第一条的索引值
+ * @return int iIndex	: 列表中第一条的索引值
+ */
 int CPlayerView::GetListTopIndex()
 {
 	int iIndex = 0;
@@ -718,16 +619,10 @@ int CPlayerView::GetListTopIndex()
 	return iIndex;
 }
 
-/*****************************************************************************
-* @func		:	SetListTopIndex
-* @summary	:	设置列表中第一条的索引值
-* @in		:	int iIndex : 将要设置的列表中第一条的索引值
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-3-30 11:30:04
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 设置列表中第一条的索引值
+ * @param[in] iIndex 将要设置的列表中第一条的索引值
+ */
 void CPlayerView::SetListTopIndex(int iIndex)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -735,16 +630,9 @@ void CPlayerView::SetListTopIndex(int iIndex)
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	InitScrollList
-* @summary	:	初始化列表滚动条
-* @in		:	void
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-3-30 11:30:04
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 初始化列表滚动条
+ */
 void CPlayerView::InitScrollList()
 {
 	TEXTMETRIC tm;
@@ -779,18 +667,12 @@ void CPlayerView::InitScrollList()
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	UpdateScrollList
-* @summary	:	按滚动条消息更新列表位置
-*			:	WndProcのWM_VSCROLL消息处用
-* @in		:	WPARAM wParam : 滚动条消息
-*			:	LPARAM lParam : 滚动条句柄
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-3-30 11:30:04
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 按滚动条消息更新列表位置
+ * WndProcのWM_VSCROLL消息处用
+ * @param[in] wParam 滚动条消息
+ * @param[in] lParam 滚动条句柄
+ */
 void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 {
 	if (SCROLL_LIST_ID != GetWindowLong((HWND)lParam, GWL_ID))
@@ -837,17 +719,6 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	GetCurrentSelectListName
-* @summary	:	获取当前选中的歌曲名
-* @in		:	TCHAR* szCurrentSelectName : 输出缓冲区
-*			:	int cchCurrentSelectName : 缓冲区长度
-* @out		:	TCHAR* szCurrentSelectName : 当前选中的歌曲名
-* @return	:	int : 名称长度，失败返回 LB_ERR
-* @author	:	Li Jiachun
-* @time		:	2013-3-31 19:37:18
-* @history	:	
-******************************************************************************/
 // 返回当前选中索引；没有选中时返回 LB_ERR。
 int CPlayerView::GetCurrentIndex()
 {
@@ -873,6 +744,12 @@ void CPlayerView::SetListIndex(int iIndex)
 	}
 }
 
+/**
+ * @brief 获取当前选中的歌曲名。
+ * @param[out] szCurrentSelectName 输出缓冲区；失败时不修改。
+ * @param[in] cchCurrentSelectName 缓冲区长度。
+ * @return 名称长度，失败返回 LB_ERR。
+ */
 int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName, int cchCurrentSelectName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -880,21 +757,16 @@ int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName, int cchCur
 	return GetListText(hwndListTable, iCurIndex, szCurrentSelectName, cchCurrentSelectName);
 }
 
-/*****************************************************************************
-* @func		:	UpdateScrollListByMouse
-* @summary	:	鼠标滚轮更新播放列表
-* @in		:	int iDeltaPerLine : 滚轮每格对应的滚动量
-*			:	bool bPageScroll : 是否按页滚动
-*			:	UINT message : 原始鼠标消息
-*			:	WPARAM wParam : 原始 wParam
-*			:	LPARAM lParam : 原始 lParam
-* @out		:	none
-* @return	:	NULL	: 已处理
-*			:	DefWindowProc	: 未处理
-* @author	:	Li Jiachun
-* @time		:	2013-3-31 19:39:06
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 鼠标滚轮更新播放列表
+ * @param[in] iDeltaPerLine 滚轮每格对应的滚动量
+ * @param[in] bPageScroll 是否按页滚动
+ * @param[in] message 原始鼠标消息
+ * @param[in] wParam 原始 wParam
+ * @param[in] lParam 原始 lParam
+ * @return NULL	: 已处理
+ * DefWindowProc	: 未处理
+ */
 LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, bool bPageScroll, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (0 == iDeltaPerLine)
@@ -924,17 +796,11 @@ LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, bool bPageScroll
 	return NULL;
 }
 
-/*****************************************************************************
-* @func		:	UpdateRectBeginTime
-* @summary	:	更新开始时间区域的时间显示
-* @in		:	HDC hdc : 绘制设备上下文
-*			:	const TCHAR szBeginTime[] : 开始时间
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 更新开始时间区域的时间显示
+ * @param[in] hdc 绘制设备上下文
+ * @param[in] szBeginTime[] 开始时间
+ */
 void CPlayerView::UpdateRectBeginTime(HDC hdc, const TCHAR szBeginTime[])
 {
 	if (NULL == hdc)
@@ -955,17 +821,11 @@ void CPlayerView::UpdateRectBeginTime(HDC hdc, const TCHAR szBeginTime[])
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	UpdateRectTotalTime
-* @summary	:	更新总时间的显示
-* @in		:	HDC hdc : 绘制设备上下文
-*			:	const TCHAR szTotalTime[] : 总时间
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 更新总时间的显示
+ * @param[in] hdc 绘制设备上下文
+ * @param[in] szTotalTime[] 总时间
+ */
 void CPlayerView::UpdateRectTotalTime(HDC hdc, const TCHAR szTotalTime[])
 {
 	if (NULL == hdc)
@@ -986,17 +846,11 @@ void CPlayerView::UpdateRectTotalTime(HDC hdc, const TCHAR szTotalTime[])
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	UpdateRectCurreTime
-* @summary	:	更新当前时间的显示
-* @in		:	HDC hdc : 绘制设备上下文
-*			:	const TCHAR szCurrentTime[] : 当前时间
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 更新当前时间的显示
+ * @param[in] hdc 绘制设备上下文
+ * @param[in] szCurrentTime[] 当前时间
+ */
 void CPlayerView::UpdateRectCurreTime(HDC hdc, const TCHAR szCurrentTime[])
 {
 	if (NULL == hdc)
@@ -1017,32 +871,18 @@ void CPlayerView::UpdateRectCurreTime(HDC hdc, const TCHAR szCurrentTime[])
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	InvalidateRectCurrentTime
-* @summary	:	是当前时间区域块无效
-* @in		:	void
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 是当前时间区域块无效
+ */
 void CPlayerView::InvalidateRectCurrentTime()
 {
 	InvalidateRect(m_hWnd, &m_rectCurrent, TRUE);
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	InvalidateRectTotalTime
-* @summary	:	使总时间区域块无效
-* @in		:	void
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 使总时间区域块无效
+ */
 void CPlayerView::InvalidateRectTotalTime()
 {
 	InvalidateRectCurrentTime();
@@ -1050,16 +890,10 @@ void CPlayerView::InvalidateRectTotalTime()
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	InitScrollTime
-* @summary	:	初始化时间滚动条（范围按秒设置）
-* @in		:	int iTotalTime : 总时长（毫秒）
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 初始化时间滚动条（范围按秒设置）
+ * @param[in] iTotalTime 总时长（毫秒）
+ */
 void CPlayerView::InitScrollTime(int iTotalTime)
 {
 	HWND hwndScrollTime = GetDlgItem(m_hWnd, SCROLL_TIME_ID);
@@ -1070,17 +904,12 @@ void CPlayerView::InitScrollTime(int iTotalTime)
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	GetPreviousSongName
-* @summary	:	获取上一首歌的名字
-* @in		:	TCHAR* szPreSongName : 输出缓冲区
-*			:	int cchPreSongName : 缓冲区长度
-* @out		:	TCHAR* szPreSongName : 上一首歌的名字
-* @return	:	int : 名称长度，失败返回 LB_ERR
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 获取上一首歌的名字。
+ * @param[out] szPreSongName 输出缓冲区；失败时不修改。
+ * @param[in] cchPreSongName 缓冲区长度。
+ * @return 名称长度，失败返回 LB_ERR。
+ */
 int CPlayerView::GetPreviousSongName(TCHAR* szPreSongName, int cchPreSongName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -1100,17 +929,12 @@ int CPlayerView::GetPreviousSongName(TCHAR* szPreSongName, int cchPreSongName)
 	return GetListText(hwndListTable, iPreSongIndex, szPreSongName, cchPreSongName);
 }
 
-/*****************************************************************************
-* @func		:	GetNextSongName
-* @summary	:	获取下一首歌的名字
-* @in		:	TCHAR* szNextName : 输出缓冲区
-*			:	int cchNextName : 缓冲区长度
-* @out		:	TCHAR* szNextName : 下一首歌的名字
-* @return	:	int : 名称长度，失败返回 LB_ERR
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 获取下一首歌的名字。
+ * @param[out] szNextName 输出缓冲区；失败时不修改。
+ * @param[in] cchNextName 缓冲区长度。
+ * @return 名称长度，失败返回 LB_ERR。
+ */
 int CPlayerView::GetNextSongName(TCHAR* szNextName, int cchNextName)
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -1125,16 +949,9 @@ int CPlayerView::GetNextSongName(TCHAR* szNextName, int cchNextName)
 	return GetListText(hwndListTable, iNextSongIndex, szNextName, cchNextName);
 }
 
-/*****************************************************************************
-* @func		:	SetPreviousIndex
-* @summary	:	将当前的歌曲选择项设为上一首歌
-* @in		:	void
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 将当前的歌曲选择项设为上一首歌
+ */
 void CPlayerView::SetPreviousIndex()
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
@@ -1155,16 +972,9 @@ void CPlayerView::SetPreviousIndex()
 	return ;
 }
 
-/*****************************************************************************
-* @func		:	SetNextIndex
-* @summary	:	将当前的歌曲选择项设为下一首歌
-* @in		:	void
-* @out		:	none
-* @return	:	void
-* @author	:	Li Jiachun
-* @time		:	2013-4-3 21:53:53
-* @history	:	
-******************************************************************************/
+/**
+ * @brief 将当前的歌曲选择项设为下一首歌
+ */
 void CPlayerView::SetNextIndex()
 {
 	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);

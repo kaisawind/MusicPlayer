@@ -1,10 +1,12 @@
-﻿/********************************************************************************
-* @file		:	MusicPlayer.h
-* @summary	:	应用层头文件：窗口、菜单、定时器声明
-* @author	:	Li Jiachun
-* @time		:	2013-3-24 13:26:03
-* @history	:
-********************************************************************************/
+﻿/**
+ * @file MusicPlayer.h
+ * @brief 应用层头文件：窗口、菜单、定时器声明
+ * @author kaisawind <wind.kaisa@gmail.com>
+ * @date 2013-03-24
+ * @par 变更历史
+ * - 2013-03-24 初版。
+ * - 2026-11-25 重构、DPI、播放模式、测试与注释整理，详见 CHANGELOG.md。
+ */
 #ifndef __MUSICPLAYER_H__
 #define __MUSICPLAYER_H__
 #include "resource.h"

@@ -115,3 +115,8 @@ ctest --test-dir build-native -C Debug --output-on-failure
 g++ -std=c++11 -Isrc/common tests/test_range.cpp -o test_range
 ./test_range
 ```
+
+## 6. 维护者与变更历史
+
+- 维护者：kaisawind <wind.kaisa@gmail.com>
+- 变更历史：[CHANGELOG.md](CHANGELOG.md)
