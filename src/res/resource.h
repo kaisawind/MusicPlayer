@@ -16,6 +16,7 @@
 #define IDM_STOP                        32782
 #define IDM_NEXTSONG                    32785
 #define IDM_PRESONG                     32786
+#define IDM_OPEN                        32780
 #define IDM_PLAY                        32789
 #define IDM_PAUSE                       32790
 #define IDC_STATIC                      -1

@@ -24,6 +24,9 @@
     <ClInclude Include="common\Common.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="common\Range.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="common\stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>

@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
 * @file		:	AudioPlayer.h
-* @summary	:	对libzplay开源库进行封转，MusicPlayer动作的处理类
+* @summary	:	libzplay 音频播放封装
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 14:53:06
 * @history	:	

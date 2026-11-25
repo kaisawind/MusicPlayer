@@ -26,12 +26,14 @@ enum enumWindowID_em
 	STATIC_LISTPATH_ID
 };
 
+// 主窗口视图辅助类：创建控件、读取列表、更新滚动条和时间文本。
 class CPlayerView
 {
 public:
 	CPlayerView(HINSTANCE, HWND);
 	void ShowPlayOrPause(bool);
 	void InitListTable();
+	int SelectListName(const TCHAR*);
 	int InitWindows();
 	int GetSongsCount();
 	int GetListTopIndex();

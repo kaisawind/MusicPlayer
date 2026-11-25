@@ -60,6 +60,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\third_party\libzplay;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ResourceCompile>
@@ -83,6 +84,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\third_party\libzplay;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -95,6 +97,7 @@
     <ClInclude Include="app\MusicPlayer.h" />
     <ClInclude Include="audio\AudioPlayer.h" />
     <ClInclude Include="common\Common.h" />
+    <ClInclude Include="common\Range.h" />
     <ClInclude Include="common\stdafx.h" />
     <ClInclude Include="common\targetver.h" />
     <ClInclude Include="..\third_party\libzplay\libzplay.h" />

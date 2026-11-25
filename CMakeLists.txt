@@ -34,6 +34,7 @@ target_include_directories(MusicPlayer PRIVATE
 target_link_libraries(MusicPlayer PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libzplay/libzplay.lib
   gdi32
+  comdlg32
 )
 
 if(MSVC)
@@ -87,3 +88,12 @@ add_custom_command(TARGET MusicPlayer POST_BUILD
           ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libzplay/libzplay.dll
           $<TARGET_FILE_DIR:MusicPlayer>
 )
+
+include(CTest)
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+  add_executable(MusicPlayerTests tests/test_range.cpp)
+  target_include_directories(MusicPlayerTests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/common
+  )
+  add_test(NAME MusicPlayerTests COMMAND MusicPlayerTests)
+endif()

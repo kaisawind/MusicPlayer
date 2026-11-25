@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * @file		:	AudioPlayer.cpp
-* @summary	:	对libzplay开源库进行封转，MusicPlayer动作的处理类
+* @summary	:	libzplay 音频播放封装
 * @author	:	Li Jiachun
 * @time		:	2013-3-24 14:53:06
 * @history	:	
@@ -62,10 +62,9 @@ CAudioPlayer::CAudioPlayer()
 }
 
 /*****************************************************
-*	@func	:	OpenFile(TCHAR* , enumMusicFormat_em )
+*	@func	:	OpenFile(const TCHAR*)
 *	@summary:	打开音乐文件
-*	@in		:	TCHAR* szFileName	: 要打开的文件名
-*			:	enumMusicFormat_em nFormate	: 要打开的文件格式
+*	@in		:	const TCHAR* szFileName	: 要打开的文件名
 *	@out	:	none
 *	@return	:	TRUE : ALL OK
 *			:	FALSE : 打开文件失败
@@ -237,7 +236,7 @@ tagPlayStatus_t* CAudioPlayer::GetPlayStatus()
 
 /*****************************************************
 *	@func	:	GetFileStatus()
-*	@summary:	获取播放状态
+*	@summary:	获取文件状态
 *	@in		:	void
 *	@out	:	none
 *	@return	:	FileStatus : 文件状态结构体
@@ -252,11 +251,11 @@ tagFileStatus_t* CAudioPlayer::GetFileStatus()
 
 /*****************************************************
 *	@func	:	MusicClose()
-*	@summary:	关闭音乐播放文件，清空所有数据
+*	@summary:	关闭当前文件，复位打开/播放状态
 *	@in		:	void
 *	@out	:	none
 *	@return	:	TRUE : ALL OK
-*			:	FALSE : 音乐停止播放失败
+*			:	FALSE : 关闭失败
 *	@author	:	DaPPer
 *	@time	:	2013-3-30 16:02:21
 *	@history:	
@@ -281,7 +280,7 @@ int CAudioPlayer::MusicClose()
 
 /*****************************************************
 *	@func	:	NewMusicPlay
-*	@summary:	播放一首新的歌曲所需要的处理
+*	@summary:	打开并播放新文件；格式不支持时保留当前文件
 *	@in		:	const TCHAR* szFileName	: 要播放的歌曲的名字
 *	@out	:	none
 *	@return	:	TRUE : ALL OK
@@ -292,6 +291,17 @@ int CAudioPlayer::MusicClose()
 ******************************************************/
 int CAudioPlayer::NewMusicPlay(const TCHAR* szFileName)
 {
+	if ((NULL == player) || (NULL == szFileName))
+	{
+		return FALSE;
+	}
+
+	// 先确认格式；不支持的格式直接失败，避免关闭当前正在播放的文件
+	if (sfUnknown == player->GetFileFormatW(szFileName))
+	{
+		return FALSE;
+	}
+
 	int iRet = FALSE;
 	if (MusicClose()			&&
 		OpenFile(szFileName)	&&

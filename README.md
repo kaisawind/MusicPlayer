@@ -35,6 +35,7 @@ src/
     AudioPlayer.h
   common/
     Common.h
+    Range.h
     stdafx.cpp
     stdafx.h
     targetver.h
@@ -46,6 +47,8 @@ src/
     MusicPlayer.rc
     resource.h
     small.ico
+tests/
+  test_range.cpp
 ```
 
 ## 3. 编译及运行
@@ -74,8 +77,10 @@ cmake -S . -B build-vs -G "Visual Studio 18 2026" -A Win32
 cmake --build build-vs --config Debug
 ```
 
-生成的解决方案是 build-vs/MusicPlayer.sln，产物在 build-vs/Debug/。
+生成的解决方案是 build-vs/MusicPlayer.slnx（VS 2026 新格式），产物在 build-vs/Debug/。
 仓库根目录的 MusicPlayer.sln 是手工维护的 VS 工程，两者都可以编译。
+CMake 原生构建会同时生成 MusicPlayerTests，可用 `ctest -C Debug` 运行区间/索引测试。
+“文件 → 打开”可以选择其它目录的 MP3/WAV，并把工作目录切到该文件所在目录。
 
 Linux 下可以使用 CMake + zig cc 交叉编译 32 位 Windows 程序，
 需要安装 cmake、zig 和 iconv：
@@ -88,3 +93,21 @@ cmake --build build
 编译产物是 build/MusicPlayer.exe，libzplay.dll 会自动拷贝到同一目录。
 MusicPlayer.rc 是 UTF-16LE 编码，MinGW/zig 构建时会先转成 UTF-8 再交给 zig rc。
 zig 构建使用自带的 MinGW/UCRT，建议在 Windows 10 及以上运行。
+
+## 5. 测试
+
+`tests/test_range.cpp` 覆盖列表索引和音量区间的夹紧逻辑。原生 CMake 构建会生成
+`MusicPlayerTests`：
+
+```shell
+cmake -S . -B build-native -G "Visual Studio 18 2026" -A Win32
+cmake --build build-native --config Debug
+ctest --test-dir build-native -C Debug --output-on-failure
+```
+
+也可以直接用本机编译器运行：
+
+```shell
+g++ -std=c++11 -Isrc/common tests/test_range.cpp -o test_range
+./test_range
+```

@@ -7,6 +7,7 @@
 ********************************************************************************/
 #include "stdafx.h"
 #include "PlayerView.h"
+#include "Range.h"
 #include <algorithm>
 
 namespace
@@ -29,6 +30,7 @@ const RECT rectCurrent = {360, 410, 440, 430};
 
 const DWORD LBS_USER = LBS_NOTIFY | LBS_SORT | WS_BORDER;
 
+// 安全读取列表文本：先查长度，失败或超出缓冲区返回 LB_ERR。
 int GetListText(HWND hwndList, int iIndex, TCHAR* szText, int cchText)
 {
 	if ((NULL == hwndList) || (NULL == szText) || (cchText <= 0))
@@ -52,6 +54,7 @@ int GetListText(HWND hwndList, int iIndex, TCHAR* szText, int cchText)
 }
 }
 
+// 只保存实例和主窗口句柄；子控件通过 ID 查找。
 CPlayerView::CPlayerView(HINSTANCE hInst, HWND hWnd)
 {
 	this->m_hInst = hInst;
@@ -473,11 +476,24 @@ void CPlayerView::InitListTable()
 	SetWindowText(hwndListPath, szBuffer);
 
 	HWND hwndChild = GetDlgItem(m_hWnd, LIST_TABLE_ID);
+	SendMessage(hwndChild, LB_RESETCONTENT, 0, 0);
 	SendMessage(hwndChild, LB_DIR, DDL_READWRITE, (LPARAM)TEXT("*.MP3"));
 	SendMessage(hwndChild, LB_DIR, DDL_READWRITE, (LPARAM)TEXT("*.WAV"));
 	SendMessage(hwndChild, LB_SETCURSEL, 0, TRUE);
 
 	return ;
+}
+
+// 按文件名查找并选中列表项；找不到返回 LB_ERR。
+int CPlayerView::SelectListName(const TCHAR* szName)
+{
+	HWND hwndListTable = GetDlgItem(m_hWnd, LIST_TABLE_ID);
+	int iIndex = (int)SendMessage(hwndListTable, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)szName);
+	if (LB_ERR != iIndex)
+	{
+		SendMessage(hwndListTable, LB_SETCURSEL, iIndex, 0);
+	}
+	return iIndex;
 }
 
 /*****************************************************************************
@@ -604,9 +620,10 @@ void CPlayerView::InitScrollList()
 
 /*****************************************************************************
 * @func		:	UpdateScrollList
-* @summary	:	初始化列表滚动条
+* @summary	:	按滚动条消息更新列表位置
 *			:	WndProcのWM_VSCROLL消息处用
-* @in		:	void
+* @in		:	WPARAM wParam : 滚动条消息
+*			:	LPARAM lParam : 滚动条句柄
 * @out		:	none
 * @return	:	void
 * @author	:	Li Jiachun
@@ -619,9 +636,9 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 	{
 		return ;
 	}
-	static int iIndex = 0;
 	int iMin = 0;
 	int iMax = 0;
+	int iIndex = (int)GetScrollPos((HWND)lParam, SB_CTL);
 	GetScrollRange((HWND)lParam, SB_CTL, &iMin, &iMax);
 
 	switch(LOWORD(wParam))
@@ -652,14 +669,7 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	if (iIndex < iMin)
-	{
-		iIndex = iMin;
-	}
-	else if (iIndex > iMax)
-	{
-		iIndex = iMax;
-	}
+	iIndex = ClampInt(iIndex, iMin, iMax);
 
 	SetScrollPos((HWND)lParam, SB_CTL, iIndex, TRUE);
 	SetListTopIndex(iIndex);
@@ -669,9 +679,10 @@ void CPlayerView::UpdateScrollList(WPARAM wParam, LPARAM lParam)
 /*****************************************************************************
 * @func		:	GetCurrentSelectListName
 * @summary	:	获取当前选中的歌曲名
-* @in		:	TCHAR* szCurrentSelectName : 当前选中的歌曲名
-* @out		:	none
-* @return	:	int iLength : 歌曲名的长度
+* @in		:	TCHAR* szCurrentSelectName : 输出缓冲区
+*			:	int cchCurrentSelectName : 缓冲区长度
+* @out		:	TCHAR* szCurrentSelectName : 当前选中的歌曲名
+* @return	:	int : 名称长度，失败返回 LB_ERR
 * @author	:	Li Jiachun
 * @time		:	2013-3-31 19:37:18
 * @history	:	
@@ -686,10 +697,14 @@ int CPlayerView::GetCurrentSelectListName(TCHAR* szCurrentSelectName, int cchCur
 /*****************************************************************************
 * @func		:	UpdateScrollListByMouse
 * @summary	:	鼠标滚轮更新播放列表
-* @in		:	int iDeltaPerLine : 滚轮没滚动一下是的滚动大小
+* @in		:	int iDeltaPerLine : 滚轮每格对应的滚动量
+*			:	bool bPageScroll : 是否按页滚动
+*			:	UINT message : 原始鼠标消息
+*			:	WPARAM wParam : 原始 wParam
+*			:	LPARAM lParam : 原始 lParam
 * @out		:	none
-* @return	:	NULL	: 有消息处理の情况
-*			:	DefWindowProc	: 没有消息对应的处理
+* @return	:	NULL	: 已处理
+*			:	DefWindowProc	: 未处理
 * @author	:	Li Jiachun
 * @time		:	2013-3-31 19:39:06
 * @history	:	
@@ -726,7 +741,8 @@ LRESULT CPlayerView::UpdateScrollListByMouse(int iDeltaPerLine, bool bPageScroll
 /*****************************************************************************
 * @func		:	UpdateRectBeginTime
 * @summary	:	更新开始时间区域的时间显示
-* @in		:	TCHAR szBeginTime[] : 开始时间
+* @in		:	HDC hdc : 绘制设备上下文
+*			:	const TCHAR szBeginTime[] : 开始时间
 * @out		:	none
 * @return	:	void
 * @author	:	Li Jiachun
@@ -747,7 +763,8 @@ void CPlayerView::UpdateRectBeginTime(HDC hdc, const TCHAR szBeginTime[])
 /*****************************************************************************
 * @func		:	UpdateRectTotalTime
 * @summary	:	更新总时间的显示
-* @in		:	TCHAR szTotalTime[] : 总时间
+* @in		:	HDC hdc : 绘制设备上下文
+*			:	const TCHAR szTotalTime[] : 总时间
 * @out		:	none
 * @return	:	void
 * @author	:	Li Jiachun
@@ -768,7 +785,8 @@ void CPlayerView::UpdateRectTotalTime(HDC hdc, const TCHAR szTotalTime[])
 /*****************************************************************************
 * @func		:	UpdateRectCurreTime
 * @summary	:	更新当前时间的显示
-* @in		:	TCHAR szCurrentTime[] : 当前时间
+* @in		:	HDC hdc : 绘制设备上下文
+*			:	const TCHAR szCurrentTime[] : 当前时间
 * @out		:	none
 * @return	:	void
 * @author	:	Li Jiachun
@@ -841,9 +859,10 @@ void CPlayerView::InitScrollTime(int iTotalTime)
 /*****************************************************************************
 * @func		:	GetPreviousSongName
 * @summary	:	获取上一首歌的名字
-* @in		:	TCHAR* szPreSongName : 
-* @out		:	TCHAR* szPreSongName : 获取上一首歌的名字并返回
-* @return	:	void
+* @in		:	TCHAR* szPreSongName : 输出缓冲区
+*			:	int cchPreSongName : 缓冲区长度
+* @out		:	TCHAR* szPreSongName : 上一首歌的名字
+* @return	:	int : 名称长度，失败返回 LB_ERR
 * @author	:	Li Jiachun
 * @time		:	2013-4-3 21:53:53
 * @history	:	
@@ -863,16 +882,17 @@ int CPlayerView::GetPreviousSongName(TCHAR* szPreSongName, int cchPreSongName)
 		iCurIndex = 0;
 	}
 
-	int iPreSongIndex = std::max(0, (iCurIndex - 1));
+	int iPreSongIndex = PrevIndex(iCurIndex, iCount);
 	return GetListText(hwndListTable, iPreSongIndex, szPreSongName, cchPreSongName);
 }
 
 /*****************************************************************************
-* @func		:	GetPreviousSongName
-* @summary	:	获取上一首歌的名字
-* @in		:	TCHAR* szNextName : 
-* @out		:	TCHAR* szNextName : 获取下一首歌的名字并返回
-* @return	:	void
+* @func		:	GetNextSongName
+* @summary	:	获取下一首歌的名字
+* @in		:	TCHAR* szNextName : 输出缓冲区
+*			:	int cchNextName : 缓冲区长度
+* @out		:	TCHAR* szNextName : 下一首歌的名字
+* @return	:	int : 名称长度，失败返回 LB_ERR
 * @author	:	Li Jiachun
 * @time		:	2013-4-3 21:53:53
 * @history	:	
@@ -887,7 +907,7 @@ int CPlayerView::GetNextSongName(TCHAR* szNextName, int cchNextName)
 	}
 
 	int iCurIndex = (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	int iNextSongIndex = std::min(iCount - 1, (iCurIndex + 1));
+	int iNextSongIndex = NextIndex(iCurIndex, iCount);
 	return GetListText(hwndListTable, iNextSongIndex, szNextName, cchNextName);
 }
 
@@ -916,13 +936,13 @@ void CPlayerView::SetPreviousIndex()
 		iCurIndex = 0;
 	}
 
-	int iIndex = std::max(0, (iCurIndex - 1));
+	int iIndex = PrevIndex(iCurIndex, iCount);
 	SendMessage(hwndListTable, LB_SETCURSEL, iIndex, 0);
 	return ;
 }
 
 /*****************************************************************************
-* @func		:	SetPreviousIndex
+* @func		:	SetNextIndex
 * @summary	:	将当前的歌曲选择项设为下一首歌
 * @in		:	void
 * @out		:	none
@@ -941,17 +961,15 @@ void CPlayerView::SetNextIndex()
 	}
 
 	int iCurIndex = (int)SendMessage(hwndListTable, LB_GETCURSEL, 0, 0);
-	int iIndex = std::min(iCount - 1, (iCurIndex + 1));
+	int iIndex = NextIndex(iCurIndex, iCount);
 	SendMessage(hwndListTable, LB_SETCURSEL, iIndex, 0);
 	return ;
 }
 
+// 初始化音量滚动条位置（0-100）。
 void CPlayerView::InitScrollVolume(unsigned int iVolume)
 {
-	if (iVolume > MAX_PLAYER_VOLUME)
-	{
-		iVolume = MAX_PLAYER_VOLUME;
-	}
+	iVolume = (unsigned int)ClampInt((int)iVolume, 0, MAX_PLAYER_VOLUME);
 
 	HWND hwndScrollVolume = GetDlgItem(m_hWnd, SCROLL_VOLUME_ID);
 	SetScrollRange(hwndScrollVolume, SB_CTL, 0, MAX_PLAYER_VOLUME, FALSE);
@@ -959,6 +977,7 @@ void CPlayerView::InitScrollVolume(unsigned int iVolume)
 	return ;
 }
 
+// 按滚动条消息更新音量，结果夹在 0-100。
 void CPlayerView::UpdateScrollVolume(unsigned int& iVolume, WPARAM wParam, LPARAM lParam)
 {
 	if (SCROLL_VOLUME_ID != GetWindowLong((HWND)lParam, GWL_ID))
@@ -966,12 +985,9 @@ void CPlayerView::UpdateScrollVolume(unsigned int& iVolume, WPARAM wParam, LPARA
 		return ;
 	}
 
-	if (iVolume > MAX_PLAYER_VOLUME)
-	{
-		iVolume = MAX_PLAYER_VOLUME;
-	}
+	iVolume = (unsigned int)ClampInt((int)iVolume, 0, MAX_PLAYER_VOLUME);
 
-	static int iIndex = (int)iVolume;
+	int iIndex = MAX_PLAYER_VOLUME - (int)GetScrollPos((HWND)lParam, SB_CTL);
 	switch(LOWORD(wParam))
 	{
 	case SB_PAGEDOWN:
@@ -1000,20 +1016,14 @@ void CPlayerView::UpdateScrollVolume(unsigned int& iVolume, WPARAM wParam, LPARA
 		break;
 	}
 
-	if (iIndex < 0)
-	{
-		iIndex = 0;
-	}
-	else if (iIndex > MAX_PLAYER_VOLUME)
-	{
-		iIndex = MAX_PLAYER_VOLUME;
-	}
+	iIndex = ClampInt(iIndex, 0, MAX_PLAYER_VOLUME);
 
 	SetScrollPos((HWND)lParam, SB_CTL, MAX_PLAYER_VOLUME - iIndex, TRUE);
 	iVolume = (unsigned int)iIndex;
 	return ;
 }
 
+// 更新进度条位置（毫秒）。
 void CPlayerView::UpdateScrollTime(unsigned int iTime)
 {
 	HWND hwndScrollTime = GetDlgItem(m_hWnd, SCROLL_TIME_ID);

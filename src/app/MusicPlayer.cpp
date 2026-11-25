@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include "MusicPlayer.h"
+#include <commdlg.h>
 
 static HINSTANCE hInst;
 static TCHAR szTitle[MAX_LOADSTRING];
@@ -246,7 +247,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		// TODO: 在此添加任意绘图代码...		
 		obj.UpdateRectCurreTime(hdc, AudioPlayer->GetPlayStatus()->szCurrentTime);
 		obj.UpdateRectBeginTime(hdc, TEXT("00:00:000"));
 		obj.UpdateRectTotalTime(hdc, AudioPlayer->GetFileStatus()->szTotalTime);
@@ -300,6 +300,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+// 播放指定文件；失败时提示并返回 false。
 static bool PlayFile(HWND hWnd, const TCHAR* szFileName)
 {
 	if ((NULL == szFileName) || (TEXT('\0') == szFileName[0]))
@@ -316,12 +317,30 @@ static bool PlayFile(HWND hWnd, const TCHAR* szFileName)
 	return true;
 }
 
+// 打开文件选择对话框，成功时把路径写入 szFile。
+static bool BrowseForFile(HWND hWnd, TCHAR* szFile, int cchFile)
+{
+	OPENFILENAME ofn = {0};
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hWnd;
+	ofn.lpstrFilter = TEXT("音频文件 (*.mp3;*.wav)\0*.mp3;*.wav\0\0");
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = cchFile;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+
+	szFile[0] = TEXT('\0');
+	return (FALSE != GetOpenFileName(&ofn));
+}
+
 /*****************************************************************************
 * @func		:	MenuProc(HWND , UINT , WPARAM , LPARAM )
 * @summary	:	“菜单”栏的消息处理程序。
-* @message	:	IDM_PLAY	- 播放菜单
+* @message	:	IDM_OPEN	- 打开文件菜单
+*			:	IDM_PLAY	- 播放菜单
 *			:	IDM_PAUSE	- 暂停菜单
 *			:	IDM_STOP	- 停止菜单
+*			:	IDM_PRESONG	- 上一曲菜单
+*			:	IDM_NEXTSONG	- 下一曲菜单
 *			:	IDM_ABOUT	- 关于菜单
 *			:	IDM_EXIT	- 退出菜单
 * @in		:	HWND hWnd : 窗口句柄
@@ -415,6 +434,39 @@ LRESULT MenuProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
 		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
 		break;
+	case IDM_OPEN:
+	{
+		TCHAR szFile[MAX_PATH] = L"";
+		if (!BrowseForFile(hWnd, szFile, MAX_PATH))
+		{
+			break;
+		}
+
+		TCHAR* pSlash = _tcsrchr(szFile, TEXT('\\'));
+		const TCHAR* szName = (NULL == pSlash) ? szFile : (pSlash + 1);
+
+		TCHAR szDir[MAX_PATH] = L"";
+		lstrcpynW(szDir, szFile, MAX_PATH);
+		pSlash = _tcsrchr(szDir, TEXT('\\'));
+		if (NULL != pSlash)
+		{
+			*pSlash = TEXT('\0');
+			SetCurrentDirectory(szDir);
+		}
+
+		obj.InitListTable();
+		obj.InitScrollList();
+		obj.SelectListName(szName);
+
+		if (!PlayFile(hWnd, szName))
+		{
+			break;
+		}
+		obj.InvalidateRectTotalTime();
+		obj.InitScrollTime(AudioPlayer->GetTotalMilliSecond());
+		obj.ShowPlayOrPause(AudioPlayer->GetPlayStatus()->bPlay);
+		break;
+	}
 	case IDM_ABOUT:
 		DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 		break;
@@ -569,9 +621,10 @@ LRESULT ListBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 /*****************************************************************************
 * @func		:	GetMouseDeltaPerLine
 * @summary	:	获取鼠标每滚动一下时的滚轮滚动大小
+*			:	同时设置 g_bPageScroll（系统设置为“滚一屏”时为 true）
 * @in		:	void
 * @out		:	none
-* @return	:	int iDeltaPerLine : 鼠标每滚动一下时的滚轮滚动大小
+* @return	:	int : 每格滚动的 delta；按页滚动时返回 WHEEL_DELTA，不滚动时返回 0
 * @author	:	Li Jiachun
 * @time		:	2013-3-31 19:41:08
 * @history	:	
